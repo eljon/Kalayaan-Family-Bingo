@@ -13,8 +13,8 @@
   "use strict";
 
   // Ordered oldest -> newest. Update when a new /vN/ snapshot is released.
-  var VERSIONS = ["v1", "v2"];
-  var LATEST = "v2";
+  var VERSIONS = ["v1", "v2", "v3"];
+  var LATEST = "v3";
 
   var current = window.APP_VERSION || LATEST;
 
