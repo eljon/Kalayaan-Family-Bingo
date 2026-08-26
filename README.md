@@ -41,6 +41,7 @@ older version by URL slug**:
 | `/v6`    | Version 6 snapshot (distinct page background) |
 | `/v7`    | Version 7 snapshot (paper texture, wear, lived-in) |
 | `/v8`    | Version 8 snapshot (no banner pill) |
+| `/v9`    | Version 9 snapshot (lighter, worn cardboard edges) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
