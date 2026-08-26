@@ -92,6 +92,7 @@ older version by URL slug**:
 | `/v56`   | Version 56 snapshot (overlay clips at exact viewport, no doc-overflow reflow) |
 | `/v57`   | Version 57 snapshot (drop backdrop blur so the card shadow doesn't morph) |
 | `/v58`   | Version 58 snapshot (tap the centred coverflow photo → full-screen full-res view) |
+| `/v59`   | Version 59 snapshot (swipe down on the coverflow to dismiss it) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
