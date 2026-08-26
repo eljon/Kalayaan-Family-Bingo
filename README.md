@@ -65,6 +65,7 @@ older version by URL slug**:
 | `/v29`   | Version 29 snapshot (camera button replaces Polaroid, bigger titles) |
 | `/v30`   | Version 30 snapshot (borderless camera icon button, larger stickers) |
 | `/v31`   | Version 31 snapshot (labeled "Add Photo" action button) |
+| `/v32`   | Version 32 snapshot (dimensional glossy candy-style photo button) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
