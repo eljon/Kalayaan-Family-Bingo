@@ -9,7 +9,8 @@ photo. **Love. Share. Serve. Together.**
 1. **Create a card** — enter your family/player name and tap **+ New Bingo Card**.
    (This is the lightweight "account" for now — no sign-in required.)
 2. **Complete activities** — tap any square, then upload a photo of your family
-   doing that activity. The square flips to your photo with a ✓.
+   doing that activity. Your photo develops right inside the square's little
+   instant-photo (Polaroid).
 3. **Get BINGO** — finish all 12 squares to trigger the celebration! 🎉
 
 You can keep several cards on one device and switch between them with the
@@ -54,6 +55,7 @@ older version by URL slug**:
 | `/v19`   | Version 19 snapshot (family name on card, no leaves) |
 | `/v20`   | Version 20 snapshot (3x4 grid, "Family" appended, roomier padding) |
 | `/v21`   | Version 21 snapshot (no progress bar, no switch) |
+| `/v22`   | Version 22 snapshot (black Polaroid photo in each cell) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
