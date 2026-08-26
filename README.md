@@ -62,6 +62,7 @@ older version by URL slug**:
 | `/v26`   | Version 26 snapshot (random unique Polaroid tilt each load) |
 | `/v27`   | Version 27 snapshot (broad-Sharpie marker card name font) |
 | `/v28`   | Version 28 snapshot (wider cell padding so titles clear borders) |
+| `/v29`   | Version 29 snapshot (camera button replaces Polaroid, bigger titles) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
