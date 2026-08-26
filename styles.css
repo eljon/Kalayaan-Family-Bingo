@@ -551,18 +551,6 @@ body {
 /* glossy sticker icons already carry their own shadow/gloss — no filter */
 .cell-ill { filter: none; }
 
-/* hand-drawn outline sits behind the cell content (self-draws on intro) */
-.cell-outline {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  pointer-events: none;
-  overflow: visible;
-}
-.cell-icon, .cell-title, .cell-box, .cell-sub { position: relative; z-index: 1; }
-
 /* hand-drawn lettering inside the card */
 .cell-title { font-family: "Patrick Hand", "Nunito", cursive; letter-spacing: 0.3px; }
 .card-motto { font-family: "Patrick Hand", "Baloo 2", cursive; letter-spacing: 0.3px; }

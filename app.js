@@ -35,16 +35,13 @@
     teal: "#2fa3a0", navy: "#1f3a5f", purple: "#8f6fb0"
   };
 
-  var SVGNS = "http://www.w3.org/2000/svg";
-
-  // A wobbly, hand-drawn rounded-rectangle outline as an inline SVG element.
+  // A wobbly, hand-drawn rounded-rectangle outline as an SVG data URI.
   // Regenerated (randomised) for every cell on every load, so no two boxes —
-  // and no two page loads — are outlined the same way. Built as real DOM so
-  // the stroke can self-draw (stroke-dashoffset) for the intro animation.
-  function makeOutlineSVG(color) {
-    var W = 100, H = 104, pad = 4, R = 13;
+  // and no two page loads — are outlined the same way.
+  function handDrawnBorder(color) {
+    var W = 100, H = 134, pad = 4, R = 14;
     var x0 = pad, y0 = pad, x1 = W - pad, y1 = H - pad;
-    function build(jit) {
+    function build(jit, seedShift) {
       var pts = [];
       function edge(ax, ay, bx, by, n) {
         for (var i = 0; i < n; i++) { var t = i / n; pts.push([ax + (bx - ax) * t, ay + (by - ay) * t]); }
@@ -65,24 +62,11 @@
       }
       return d + "Z";
     }
-    var svg = document.createElementNS(SVGNS, "svg");
-    svg.setAttribute("class", "cell-outline");
-    svg.setAttribute("viewBox", "0 0 " + W + " " + H);
-    svg.setAttribute("preserveAspectRatio", "none");
-    svg.setAttribute("aria-hidden", "true");
-    var specs = [[build(2.4), 2.6, 0.95], [build(3.2), 1.5, 0.45]];
-    for (var s = 0; s < specs.length; s++) {
-      var p = document.createElementNS(SVGNS, "path");
-      p.setAttribute("d", specs[s][0]);
-      p.setAttribute("fill", "none");
-      p.setAttribute("stroke", color);
-      p.setAttribute("stroke-width", String(specs[s][1]));
-      p.setAttribute("stroke-linecap", "round");
-      p.setAttribute("stroke-linejoin", "round");
-      p.setAttribute("opacity", String(specs[s][2]));
-      svg.appendChild(p);
-    }
-    return svg;
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' +
+      '<path d="' + build(2.4) + '" fill="none" stroke="' + color + '" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" opacity="0.95"/>' +
+      '<path d="' + build(3.2) + '" fill="none" stroke="' + color + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" opacity="0.45"/>' +
+      '</svg>';
+    return 'url("data:image/svg+xml,' + encodeURIComponent(svg) + '")';
   }
 
   /* ------------------------------------------------------------------ */
@@ -369,7 +353,6 @@
 
   var current = null;      // current account object
   var activeTaskId = null; // task open in modal
-  var introPlayed = false; // the draw-in intro runs once per page load
   var objectUrls = [];     // track for cleanup
 
   /* ------------------------------------------------------------------ */
@@ -453,8 +436,6 @@
     applyWornEdge();
     scheduleFit();
 
-    var animate = !introPlayed; // only the first load draws itself in
-
     el.grid.innerHTML = "";
     TASKS.forEach(function (task) {
       var done = !!(current.done && current.done[task.id]);
@@ -464,10 +445,7 @@
       cell.setAttribute("role", "listitem");
       cell.setAttribute("data-accent", task.accent);
       cell.setAttribute("aria-label", task.title + (done ? " — completed" : " — tap to add a photo"));
-
-      // hand-drawn outline (inline SVG so it can self-draw)
-      var outline = makeOutlineSVG(ACCENTS[task.accent] || "#1f3a5f");
-      cell.appendChild(outline);
+      cell.style.backgroundImage = handDrawnBorder(ACCENTS[task.accent] || "#1f3a5f");
 
       // Icon area: the poster illustration, or the photo thumbnail once done
       var iconWrap = document.createElement("div");
@@ -508,19 +486,6 @@
       cell.appendChild(box);
 
       cell.addEventListener("click", function () { openModal(task.id); });
-
-      // initial "not yet drawn" state (set synchronously to avoid a flash)
-      if (animate) {
-        var ps = outline.querySelectorAll("path");
-        for (var pi = 0; pi < ps.length; pi++) {
-          ps[pi].style.strokeDasharray = "1000";  // hide until measured in playIntro
-          ps[pi].style.strokeDashoffset = "1000";
-        }
-        title.style.clipPath = title.style.webkitClipPath = "inset(0 100% 0 0)";
-        iconWrap.style.opacity = "0";
-        box.style.opacity = "0";
-      }
-
       el.grid.appendChild(cell);
 
       if (done) {
@@ -534,40 +499,8 @@
       }
     });
 
-    if (animate) playIntro();
     updateProgress();
   }
-
-  // Draw every outline and write every title at once (one page-load only).
-  function playIntro() {
-    introPlayed = true;
-    requestAnimationFrame(function () {
-      var ease = "cubic-bezier(.6,.05,.25,1)";
-      var paths = el.grid.querySelectorAll(".cell-outline path");
-      // set each path's exact length as the dash (still hidden), no transition
-      each(paths, function (p) {
-        var len;
-        try { len = p.getTotalLength(); } catch (e) { len = 500; }
-        p.style.transition = "none";
-        p.style.strokeDasharray = len;
-        p.style.strokeDashoffset = len;
-      });
-      el.grid.getBoundingClientRect(); // commit the hidden state
-      each(paths, function (p) {
-        p.style.transition = "stroke-dashoffset 1.25s " + ease;
-        p.style.strokeDashoffset = "0";
-      });
-      each(el.grid.querySelectorAll(".cell-title"), function (t) {
-        t.style.transition = "clip-path 1.15s ease, -webkit-clip-path 1.15s ease";
-        t.style.clipPath = t.style.webkitClipPath = "inset(0 0 0 0)";
-      });
-      each(el.grid.querySelectorAll(".cell-icon, .cell-box"), function (e) {
-        e.style.transition = "opacity 0.9s ease 0.25s";
-        e.style.opacity = "1";
-      });
-    });
-  }
-  function each(list, fn) { Array.prototype.forEach.call(list, fn); }
 
   function updateProgress() {
     var doneCount = Object.keys(current.done || {}).length;
