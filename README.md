@@ -90,6 +90,7 @@ older version by URL slug**:
 | `/v54`   | Version 54 snapshot (pinch to zoom/rotate/pan the centered photo, spring back) |
 | `/v55`   | Version 55 snapshot (fix v53: no side clipping/snap; lock document not overlay) |
 | `/v56`   | Version 56 snapshot (overlay clips at exact viewport, no doc-overflow reflow) |
+| `/v57`   | Version 57 snapshot (drop backdrop blur so the card shadow doesn't morph) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
