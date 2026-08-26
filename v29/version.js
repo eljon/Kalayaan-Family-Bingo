@@ -13,8 +13,8 @@
   "use strict";
 
   // Ordered oldest -> newest. Update when a new /vN/ snapshot is released.
-  var VERSIONS = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13", "v14", "v15", "v16", "v17", "v18", "v19", "v20", "v21", "v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v35", "v36", "v37", "v38", "v39", "v40"];
-  var LATEST = "v40";
+  var VERSIONS = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13", "v14", "v15", "v16", "v17", "v18", "v19", "v20", "v21", "v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v35", "v36", "v37", "v38", "v39", "v40", "v41"];
+  var LATEST = "v41";
 
   var current = window.APP_VERSION || LATEST;
 
@@ -39,7 +39,9 @@
     ".vb-toggle.old .vb-dot{background:#c33f2c;}" +
     ".version-menu{position:absolute;left:0;bottom:44px;min-width:190px;" +
       "background:#fff;border:1px solid #e7dcc6;border-radius:14px;padding:8px;" +
-      "box-shadow:0 12px 32px rgba(31,58,95,.22);display:none;}" +
+      "box-shadow:0 12px 32px rgba(31,58,95,.22);display:none;" +
+      "max-height:60vh;overflow-y:auto;-webkit-overflow-scrolling:touch;" +
+      "overscroll-behavior:contain;}" +
     ".version-menu.open{display:block;}" +
     ".vm-head{font-size:11px;font-weight:800;letter-spacing:.5px;" +
       "text-transform:uppercase;color:#9b8f78;padding:4px 8px 6px;}" +
@@ -88,8 +90,8 @@
     (!viewingOld ? '<span class="vm-check">✓</span>' : '<span class="tag">newest</span>');
   menu.appendChild(latest);
 
-  // Each frozen version
-  VERSIONS.slice().reverse().forEach(function (v) {
+  // Each frozen version, oldest -> newest
+  VERSIONS.slice().forEach(function (v) {
     if (v === LATEST) return; // already shown as "Latest"
     var a = document.createElement("a");
     var isCur = v === current;

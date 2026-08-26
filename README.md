@@ -74,6 +74,7 @@ older version by URL slug**:
 | `/v38`   | Version 38 snapshot (completed photo shown as an orientation-aware Polaroid) |
 | `/v39`   | Version 39 snapshot (localStorage fallback when IndexedDB is blocked) |
 | `/v40`   | Version 40 snapshot (board scrolls when photos make it taller than the screen) |
+| `/v41`   | Version 41 snapshot (fit one screen w/ Polaroids; scrollable version picker) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
