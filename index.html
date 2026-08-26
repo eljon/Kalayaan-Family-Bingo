@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1f3a5f" />
+  <title>Kalayaan Ward Family Bingo</title>
+  <meta name="description" content="Complete all activities as a family! Kalayaan Ward Family Bingo." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9D%A4%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bunting" aria-hidden="true">
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-house" aria-hidden="true">🏠</span>
+      <div class="brand-text">
+        <span class="brand-ward">KALAYAAN WARD</span>
+        <h1 class="brand-title">Family <span>Bingo</span></h1>
+      </div>
+    </div>
+    <p class="tagline">Complete all activities as a family!</p>
+    <div id="accountBar" class="account-bar" hidden>
+      <div class="account-info">
+        <span class="account-avatar" id="accountAvatar">👨‍👩‍👧‍👦</span>
+        <div>
+          <span class="account-label">Playing as</span>
+          <strong id="accountName">Family</strong>
+        </div>
+      </div>
+      <div class="account-actions">
+        <button id="switchBtn" class="btn btn-ghost" type="button">Switch card</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <!-- Welcome / account creation -->
+    <section id="welcome" class="welcome" hidden>
+      <div class="welcome-card">
+        <span class="welcome-emoji" aria-hidden="true">🎉</span>
+        <h2>Join the Family Bingo</h2>
+        <p>Create a Bingo card for your family, then complete each activity by snapping a photo. Everything is saved right here in your browser.</p>
+
+        <div id="existingCards" class="existing-cards" hidden>
+          <span class="existing-label">Your cards</span>
+          <ul id="cardList" class="card-list"></ul>
+        </div>
+
+        <form id="newCardForm" class="new-card-form" autocomplete="off">
+          <label class="field">
+            <span>Family / player name</span>
+            <input id="familyName" type="text" maxlength="40" placeholder="e.g. The Serrano Family" required />
+          </label>
+          <button class="btn btn-primary" type="submit">+ New Bingo Card</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Bingo board -->
+    <section id="board" class="board-section" hidden>
+      <div class="progress-wrap">
+        <div class="progress-head">
+          <strong id="progressText">0 of 12 complete</strong>
+          <span id="progressPct" class="progress-pct">0%</span>
+        </div>
+        <div class="progress-track"><div id="progressBar" class="progress-fill"></div></div>
+      </div>
+
+      <div id="celebrate" class="celebrate" hidden>
+        <span aria-hidden="true">🏆</span>
+        <div>
+          <strong>BINGO! You did it!</strong>
+          <p>Your family completed every activity. Amazing work!</p>
+        </div>
+      </div>
+
+      <div id="grid" class="grid" role="list"></div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <p class="motto"><span class="c-red">Love.</span> <span class="c-teal">Share.</span> <span class="c-green">Serve.</span> <span class="c-navy">Together.</span> ❤️</p>
+    <p class="fine">Kalayaan Ward Family Week &middot; Photos stay on your device.</p>
+  </footer>
+
+  <!-- Photo viewer / cell modal -->
+  <div id="modal" class="modal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" type="button" data-close aria-label="Close">×</button>
+      <span class="modal-icon" id="modalIcon" aria-hidden="true">✨</span>
+      <h3 id="modalTitle">Activity</h3>
+      <p id="modalHint" class="modal-hint"></p>
+      <div id="modalPhotoWrap" class="modal-photo" hidden>
+        <img id="modalPhoto" alt="Your photo for this activity" />
+      </div>
+      <div class="modal-actions">
+        <label class="btn btn-primary" for="modalFile">
+          <span id="modalUploadLabel">📷 Upload photo</span>
+          <input id="modalFile" type="file" accept="image/*" capture="environment" hidden />
+        </label>
+        <button id="modalRemove" class="btn btn-ghost danger" type="button" hidden>Remove photo</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
