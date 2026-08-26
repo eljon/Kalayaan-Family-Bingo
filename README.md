@@ -48,6 +48,7 @@ older version by URL slug**:
 | `/v13`   | Version 13 snapshot (aged, warped, peeling like a vintage card) |
 | `/v14`   | Version 14 snapshot (CSS 3D perspective lean) |
 | `/v15`   | Version 15 snapshot (gentler lean, edge margin, fraying) |
+| `/v16`   | Version 16 snapshot (flat, minimal warp, full titles) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
