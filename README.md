@@ -87,6 +87,7 @@ older version by URL slug**:
 | `/v51`   | Version 51 snapshot (remove coverflow's rectangular card shadow halo) |
 | `/v52`   | Version 52 snapshot (no clipping in flight; shadow fades with distance) |
 | `/v53`   | Version 53 snapshot (coverflow can't scroll the page; reset scroll on close) |
+| `/v54`   | Version 54 snapshot (pinch to zoom/rotate/pan the centered photo, spring back) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
