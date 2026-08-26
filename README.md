@@ -22,6 +22,29 @@ Have a family dinner · Family game night · Hold a family home evening · Spend
 quality time, no gadgets · Submit a name on FamilySearch · Give donations ·
 Learn a recipe · Do something kind · Attend the Family Week activity (Sept 26!).
 
+## Versions & reverting
+
+The current version is shown in a small badge in the **bottom-left corner** of
+the page (e.g. `v2`). Tap it to see all versions and switch between them.
+
+Every release is also frozen as a snapshot folder, so you can **revert to an
+older version by URL slug**:
+
+| URL | What loads |
+|-----|------------|
+| `/`      | Always the **latest** version |
+| `/v1`    | Version 1 snapshot |
+| `/v2`    | Version 2 snapshot |
+
+For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
+turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
+link back to the latest. Your photos and cards are shared across versions (same
+browser storage), so switching versions never loses your progress.
+
+**To cut a new version** (e.g. `v3`): copy the current root files into a new
+`v3/` folder, bump `window.APP_VERSION` in the root `index.html`, and add the
+new version to the `VERSIONS`/`LATEST` list in `version.js`.
+
 ## Privacy
 
 This is a **fully client-side** app — there is no server. Card names live in
