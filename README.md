@@ -84,6 +84,7 @@ older version by URL slug**:
 | `/v48`   | Version 48 snapshot (bottom margin so the card clears the screen edge) |
 | `/v49`   | Version 49 snapshot (cells leave the card & fly both ways; fade during flight) |
 | `/v50`   | Version 50 snapshot (off-screen coverflow cards fade in & fly, not pop) |
+| `/v51`   | Version 51 snapshot (remove coverflow's rectangular card shadow halo) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
