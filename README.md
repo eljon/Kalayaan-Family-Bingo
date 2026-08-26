@@ -36,6 +36,7 @@ older version by URL slug**:
 | `/v1`    | Version 1 snapshot |
 | `/v2`    | Version 2 snapshot |
 | `/v3`    | Version 3 snapshot (poster-style card) |
+| `/v4`    | Version 4 snapshot (physical card + poster icons) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
@@ -56,7 +57,9 @@ Nothing is uploaded anywhere. Clearing your browser data removes your cards.
 
 Plain HTML, CSS, and vanilla JavaScript — no build step, no dependencies.
 Photos are compressed in-browser (via `<canvas>`) before being stored so they
-stay small.
+stay small. The 12 activity illustrations in `assets/icons/` are the artwork
+from the original Family Week poster (extracted as transparent PNGs) so the
+board matches the printed card.
 
 ## Local preview
 
