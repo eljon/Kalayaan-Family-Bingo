@@ -78,6 +78,7 @@ older version by URL slug**:
 | `/v42`   | Version 42 snapshot (tap a photo → 3D coverflow gallery of all photos) |
 | `/v43`   | Version 43 snapshot (coverflow slides are the full bingo item, all elements) |
 | `/v44`   | Version 44 snapshot (coverflow cell rendered at board size, scaled — exact match) |
+| `/v45`   | Version 45 snapshot (coverflow: paper filled inside the outline, no overshoot) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
