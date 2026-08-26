@@ -69,6 +69,7 @@ older version by URL slug**:
 | `/v33`   | Version 33 snapshot (hand-drawn crayon photo button) |
 | `/v34`   | Version 34 snapshot (filled accent crayon button, white text) |
 | `/v35`   | Version 35 snapshot (Add Photo opens the picker directly) |
+| `/v36`   | Version 36 snapshot (robust mobile uploads: HEIC / large photos) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
