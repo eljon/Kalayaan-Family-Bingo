@@ -128,6 +128,7 @@ older version by URL slug**:
 | `/v92`   | Version 92 snapshot (scale the tape strips down to fit the mini cards) |
 | `/v93`   | Version 93 snapshot (scale ALL tape strips incl. the count note; keep card tape on the edge) |
 | `/v94`   | Version 94 snapshot (tape placement, rotation, length re-randomised on every load) |
+| `/v95`   | Version 95 snapshot (keep card tape near centre — offset capped to ±30% of its width) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
