@@ -101,6 +101,7 @@ older version by URL slug**:
 | `/v65`   | Version 65 snapshot (revert v63/v64 status-bar experiments; restore working top/layout) |
 | `/v66`   | Version 66 snapshot (fix tap-twice-to-reopen: gate cell hover behind hover-capable pointers) |
 | `/v67`   | Version 67 snapshot (cache-bust CSS/JS by version so updates actually load) |
+| `/v68`   | Version 68 snapshot (pad top by the status-bar safe area so the app clears it) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
