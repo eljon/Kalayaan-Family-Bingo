@@ -105,6 +105,7 @@ older version by URL slug**:
 | `/v69`   | Version 69 snapshot (revert v68 viewport-fit; restore hover; add ?debug diagnostic) |
 | `/v70`   | Version 70 snapshot (diagnostic v2: live layout numbers, box pinned to the bottom) |
 | `/v71`   | Version 71 snapshot (fix top cut-off: drop the 100vh min-height floor so the board = dvh, no scroll) |
+| `/v72`   | Version 72 snapshot (diagnostic: live tap logger under ?debug for the reopen bug) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
