@@ -115,6 +115,7 @@ older version by URL slug**:
 | `/v79`   | Version 79 snapshot (Ward View mini cards are the whole card — no box or badges) |
 | `/v80`   | Version 80 snapshot (Ward View is a realistic cork bulletin board; cards pinned with push pins) |
 | `/v81`   | Version 81 snapshot (smaller pinned cards — 3 fit across the cork board) |
+| `/v82`   | Version 82 snapshot (force exactly 3 columns so 3 cards always fit, even on narrow phones) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
