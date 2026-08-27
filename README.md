@@ -111,6 +111,7 @@ older version by URL slug**:
 | `/v75`   | Version 75 snapshot (add live Firebase config — cloud sync enabled) |
 | `/v76`   | Version 76 snapshot (photos in Firestore — no Cloud Storage, no credit card) |
 | `/v77`   | Version 77 snapshot (Ward View: wall of everyone's cards, default screen, Join button) |
+| `/v78`   | Version 78 snapshot (save each card's seed; Ward View renders the real mini cards) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
