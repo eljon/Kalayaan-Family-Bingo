@@ -96,6 +96,7 @@ older version by URL slug**:
 | `/v60`   | Version 60 snapshot (darken the browser toolbars while the coverflow is open) |
 | `/v61`   | Version 61 snapshot (revert v60: dynamic theme-color shifted the board / didn't help) |
 | `/v62`   | Version 62 snapshot (version menu lists newest first) |
+| `/v63`   | Version 63 snapshot (keep the top status-bar area light during the coverflow) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
