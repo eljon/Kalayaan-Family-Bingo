@@ -2,7 +2,7 @@
 
 By default the app runs **local-only** — each device keeps its own cards and
 photos. Do the steps below once to switch on **cloud sync**, so anyone can sign
-in with their family name + secret code and see their card on **any device**.
+in with their family name + family password and see their card on **any device**.
 
 Most of this is free. One caveat: since Sept 2024, **Cloud Storage requires the
 Blaze (pay-as-you-go) plan** — it still has a no-cost tier, but needs a credit
@@ -113,12 +113,12 @@ This is a **light gate for low-stakes sharing**, not real per-user security:
 
 - Anyone using the app signs in **anonymously**, which lets the rules require
   `request.auth != null`. That stops random internet traffic, but **any app
-  user can technically read/write any player's data** — the rules can't check
-  the app-level secret code.
+  user can technically read/write any player's data** (and read the plaintext
+  passwords) — the rules can't check the app-level password.
 - So: use it for fun ward participation, not for anything sensitive. Don't have
-  people reuse important passwords as their “secret code,” and assume photos
+  people reuse important passwords as their “family password,” and assume photos
   uploaded here are visible to anyone who uses the app.
 
-If you later want true per-account protection, switch the “name + code” login
+If you later want true per-account protection, switch the “name + password” login
 for real Firebase Authentication (Google or email/password) and tighten the
 rules to `request.auth.uid == playerId`.
