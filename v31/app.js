@@ -27,7 +27,7 @@
   var LS_CURRENT = "kwfb.current.v1";
 
   // Glossy sticker versions of the poster illustrations.
-  var ICON_BASE = "assets/stickers/";
+  var ICON_BASE = "../assets/stickers/";
 
   // Inline camera / check icons for the per-cell photo button (inherit color).
   var CAM_ICON = '<svg class="cam-ic" viewBox="0 0 24 24" fill="none" ' +

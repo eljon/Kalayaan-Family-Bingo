@@ -477,7 +477,7 @@ body {
     /* faint tri-fold creases */
     linear-gradient(to bottom, transparent calc(33.3% - 1px), rgba(120,96,52,0.05) 33.3%, rgba(255,255,255,0.28) calc(33.3% + 1px), transparent calc(33.3% + 2px)),
     linear-gradient(to bottom, transparent calc(66.6% - 1px), rgba(120,96,52,0.05) 66.6%, rgba(255,255,255,0.28) calc(66.6% + 1px), transparent calc(66.6% + 2px)),
-    url("assets/tex/paper.jpg");
+    url("../assets/tex/paper.jpg");
   /* stretch so the aged/darkened edges hug the card's own edges */
   background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
   background-position: center;
@@ -491,7 +491,7 @@ body {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background-image: url("assets/tex/grunge.png");
+  background-image: url("../assets/tex/grunge.png");
   background-size: cover;
   background-position: center;
   opacity: 0.5;

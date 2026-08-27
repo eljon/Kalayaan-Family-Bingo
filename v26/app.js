@@ -27,7 +27,7 @@
   var LS_CURRENT = "kwfb.current.v1";
 
   // Glossy sticker versions of the poster illustrations.
-  var ICON_BASE = "assets/stickers/";
+  var ICON_BASE = "../assets/stickers/";
 
   // Accent colour per cell (matches the CSS data-accent palette).
   var ACCENTS = {

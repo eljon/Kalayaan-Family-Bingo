@@ -27,7 +27,7 @@
   var LS_CURRENT = "kwfb.current.v1";
 
   // Glossy sticker versions of the poster illustrations.
-  var ICON_BASE = "assets/stickers/";
+  var ICON_BASE = "../assets/stickers/";
 
   // Inline camera / check icons for the per-cell photo button — sketchy,
   // hand-drawn strokes in the cell's accent colour (currentColor).

@@ -27,7 +27,7 @@
   var LS_CURRENT = "kwfb.current.v1";
 
   // The activity illustrations (cropped from the poster) live here.
-  var ICON_BASE = "assets/icons/";
+  var ICON_BASE = "../assets/icons/";
 
   /* ------------------------------------------------------------------ */
   /* Worn cardboard edge — drawn on a canvas so it is subtle and unique */
