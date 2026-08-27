@@ -122,6 +122,7 @@ older version by URL slug**:
 | `/v86`   | Version 86 snapshot (cards cast a crisp box-shadow like real paper on the board, via a shadow caster behind the fray) |
 | `/v87`   | Version 87 snapshot (fixed-height name block so every card and every cell is the same size) |
 | `/v88`   | Version 88 snapshot (real fix: absolutely-position photos so they cannot grow cells; softer card shadow) |
+| `/v89`   | Version 89 snapshot (glossy plastic push-pins coloured from the festival banner palette) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
