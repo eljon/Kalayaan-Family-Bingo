@@ -109,6 +109,7 @@ older version by URL slug**:
 | `/v73`   | Version 73 snapshot (multi-user cloud sync via Firebase: name + secret code login) |
 | `/v74`   | Version 74 snapshot (rename to family password + confirm password on new cards) |
 | `/v75`   | Version 75 snapshot (add live Firebase config — cloud sync enabled) |
+| `/v76`   | Version 76 snapshot (photos in Firestore — no Cloud Storage, no credit card) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap

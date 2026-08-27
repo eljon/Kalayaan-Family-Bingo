@@ -4,10 +4,9 @@ By default the app runs **local-only** — each device keeps its own cards and
 photos. Do the steps below once to switch on **cloud sync**, so anyone can sign
 in with their family name + family password and see their card on **any device**.
 
-Most of this is free. One caveat: since Sept 2024, **Cloud Storage requires the
-Blaze (pay-as-you-go) plan** — it still has a no-cost tier, but needs a credit
-card on file. If you'd rather not add a card, see the note in step 3 about
-keeping photos in Firestore instead (stays fully free).
+This setup is **completely free — no credit card**. Photos are stored **in
+Firestore** (as compressed images), so you do **not** need Cloud Storage or the
+Blaze plan. Everything runs on the free **Spark** plan.
 
 ---
 
@@ -28,7 +27,7 @@ keeping photos in Firestore instead (stays fully free).
 3. These web keys are **not secrets** — they ship in every web app. Security is
    enforced by the rules in step 4, not by hiding the keys. Commit the file.
 
-## 3. Enable the three products (current console layout)
+## 3. Enable the two products (current console layout)
 
 The console is organized into **product categories** on the left, plus a
 **"Search for products"** box at the very top — the search box is the most
@@ -39,21 +38,15 @@ reliable way to jump to any product if the menus look different.
   Enable → Save.
 - **Firestore** — **Databases & Storage → Firestore** → **Create database** →
   pick a location → start in **Production mode** → Enable.
-- **Storage** — **Databases & Storage → Storage** → **Get started** → accept
-  the default bucket.
-  - ⚠️ **New projects must be on the Blaze (pay-as-you-go) plan to turn on
-    Storage.** Blaze still has a **no-cost tier** (you won't be charged under
-    the free limits for a ward-sized group), but it requires a credit card.
-    To upgrade: the gear **⚙️ (Settings) → Usage and billing → Modify plan →
-    Blaze**, or click the **Upgrade** prompt Storage shows you.
-  - **Don't want to add a card?** You can keep photos in Firestore instead of
-    Storage (stays on the free Spark plan). Ask and I'll switch the app to that
-    — our photos are compressed small enough to fit Firestore's 1 MB/photo
-    limit.
+
+That's it — **no Storage, no Blaze, no card**. Photos live in Firestore (each
+one compressed to fit Firestore's 1 MB/document limit).
 
 ## 4. Paste the security rules
 
-**Firestore** (Firestore Database → **Rules** tab) — replace all, then Publish:
+**Firestore** (Firestore Database → **Rules** tab) — replace all, then Publish.
+This covers both the player docs and their `photos` sub-collection (Firestore
+rules don't cascade, so the sub-collection needs its own line):
 
 ```
 rules_version = '2';
@@ -61,27 +54,15 @@ service cloud.firestore {
   match /databases/{database}/documents {
     match /players/{playerId} {
       allow read, write: if request.auth != null;
+      match /photos/{taskId} {
+        allow read, write: if request.auth != null;
+      }
     }
   }
 }
 ```
 
-**Storage** (Storage → **Rules** tab) — replace all, then Publish:
-
-```
-rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    match /photos/{playerId}/{fileName} {
-      allow read:   if request.auth != null;
-      allow delete: if request.auth != null;
-      allow write:  if request.auth != null
-                    && request.resource.size < 8 * 1024 * 1024
-                    && request.resource.contentType.matches('image/.*');
-    }
-  }
-}
-```
+(No Storage rules — this build doesn't use Cloud Storage.)
 
 ## 5. Deploy
 
