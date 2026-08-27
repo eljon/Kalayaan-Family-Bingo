@@ -124,6 +124,7 @@ older version by URL slug**:
 | `/v88`   | Version 88 snapshot (real fix: absolutely-position photos so they cannot grow cells; softer card shadow) |
 | `/v89`   | Version 89 snapshot (glossy plastic push-pins coloured from the festival banner palette) |
 | `/v90`   | Version 90 snapshot (flat-topped push-pins — disc + neck + flange — in banner colors) |
+| `/v91`   | Version 91 snapshot (cards held by a strip of tape instead of pins; random size, rotation, placement) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
