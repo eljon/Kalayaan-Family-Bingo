@@ -4,8 +4,10 @@ By default the app runs **local-only** — each device keeps its own cards and
 photos. Do the steps below once to switch on **cloud sync**, so anyone can sign
 in with their family name + secret code and see their card on **any device**.
 
-Everything is on Firebase's free **Spark** plan (no card required for a ward-sized
-group).
+Most of this is free. One caveat: since Sept 2024, **Cloud Storage requires the
+Blaze (pay-as-you-go) plan** — it still has a no-cost tier, but needs a credit
+card on file. If you'd rather not add a card, see the note in step 3 about
+keeping photos in Firestore instead (stays fully free).
 
 ---
 
@@ -26,13 +28,28 @@ group).
 3. These web keys are **not secrets** — they ship in every web app. Security is
    enforced by the rules in step 4, not by hiding the keys. Commit the file.
 
-## 3. Enable the three products
+## 3. Enable the three products (current console layout)
 
-In the Firebase console left menu → **Build**:
+The console is organized into **product categories** on the left, plus a
+**"Search for products"** box at the very top — the search box is the most
+reliable way to jump to any product if the menus look different.
 
-- **Authentication** → Get started → **Sign-in method** → enable **Anonymous**.
-- **Firestore Database** → Create database → **Production mode** → pick a region.
-- **Storage** → Get started → accept the default bucket.
+- **Authentication** — search "Authentication" (or under the **Security**
+  category) → **Get started** → **Sign-in method** tab → **Anonymous** →
+  Enable → Save.
+- **Firestore** — **Databases & Storage → Firestore** → **Create database** →
+  pick a location → start in **Production mode** → Enable.
+- **Storage** — **Databases & Storage → Storage** → **Get started** → accept
+  the default bucket.
+  - ⚠️ **New projects must be on the Blaze (pay-as-you-go) plan to turn on
+    Storage.** Blaze still has a **no-cost tier** (you won't be charged under
+    the free limits for a ward-sized group), but it requires a credit card.
+    To upgrade: the gear **⚙️ (Settings) → Usage and billing → Modify plan →
+    Blaze**, or click the **Upgrade** prompt Storage shows you.
+  - **Don't want to add a card?** You can keep photos in Firestore instead of
+    Storage (stays on the free Spark plan). Ask and I'll switch the app to that
+    — our photos are compressed small enough to fit Firestore's 1 MB/photo
+    limit.
 
 ## 4. Paste the security rules
 
