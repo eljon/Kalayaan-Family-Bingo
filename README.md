@@ -113,6 +113,7 @@ older version by URL slug**:
 | `/v77`   | Version 77 snapshot (Ward View: wall of everyone's cards, default screen, Join button) |
 | `/v78`   | Version 78 snapshot (save each card's seed; Ward View renders the real mini cards) |
 | `/v79`   | Version 79 snapshot (Ward View mini cards are the whole card — no box or badges) |
+| `/v80`   | Version 80 snapshot (Ward View is a realistic cork bulletin board; cards pinned with push pins) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
