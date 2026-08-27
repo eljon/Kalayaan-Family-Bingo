@@ -95,8 +95,17 @@ the login screen's status line should now read **“☁️ Cloud sync is on.”*
 - A player is identified by their **family name** (the document id is a slug of
   the name, so “The Serrano Family” and “the serrano family” are the same
   account).
-- The **secret code** is verified against a SHA-256 hash stored on the account.
-  A new name creates the account; an existing name needs the matching code.
+- A new name creates the account (typed twice to confirm); an existing name
+  needs the matching **family password**.
+
+## Admin: looking up a forgotten password
+
+There is intentionally **no "forgot password"** flow. Instead, the password is
+stored in **plaintext** on each account so you (the admin) can read it:
+
+> Firebase console → **Firestore Database** → **players** collection → open the
+> family's document → the **`password`** field is their password. Read it back
+> to them, or edit it to reset it.
 
 ## Security note (please read)
 
