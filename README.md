@@ -107,6 +107,7 @@ older version by URL slug**:
 | `/v71`   | Version 71 snapshot (fix top cut-off: drop the 100vh min-height floor so the board = dvh, no scroll) |
 | `/v72`   | Version 72 snapshot (diagnostic: live tap logger under ?debug for the reopen bug) |
 | `/v73`   | Version 73 snapshot (multi-user cloud sync via Firebase: name + secret code login) |
+| `/v74`   | Version 74 snapshot (rename to family password + confirm password on new cards) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
