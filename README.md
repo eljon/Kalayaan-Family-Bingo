@@ -120,6 +120,7 @@ older version by URL slug**:
 | `/v84`   | Version 84 snapshot (align the pin head to its shaft; lift cards off the cork with layered 3D shadows) |
 | `/v85`   | Version 85 snapshot (pin welded to card top; hover shadow with a real z-gap; bottom cell padding) |
 | `/v86`   | Version 86 snapshot (cards cast a crisp box-shadow like real paper on the board, via a shadow caster behind the fray) |
+| `/v87`   | Version 87 snapshot (fixed-height name block so every card and every cell is the same size) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
