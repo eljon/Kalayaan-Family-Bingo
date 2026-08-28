@@ -135,6 +135,7 @@ older version by URL slug**:
 | `/v99`   | Version 99 snapshot (share: upload timestamp, uncropped adaptive orientation, Share in coverflow, share the whole card) |
 | `/v100`  | Version 100 snapshot (share image timestamp uses the hand-drawn marker font) |
 | `/v101`  | Version 101 snapshot (shared card is the real card design — hand-drawn borders, polaroids, stickers — with banner + title above) |
+| `/v102`  | Version 102 snapshot (coverflow Replace/Remove restored; Share (photo + card) is owner-only) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
