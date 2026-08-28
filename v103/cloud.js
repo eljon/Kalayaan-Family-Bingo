@@ -1,0 +1,125 @@
+/* ------------------------------------------------------------------------
+ * cloud.js — Firebase-backed sync for Kalayaan Ward Family Bingo.
+ *
+ * All Firebase access lives behind window.Cloud. When Firebase isn't
+ * configured (firebase-config.js still has PASTE_* placeholders) or the SDK
+ * failed to load, Cloud.enabled stays false and the app runs fully local.
+ *
+ * Data model
+ *   Firestore  players/{docId}       = {
+ *       name, nameKey, password, done:{taskId:ms}, preferences:{},
+ *       createdAt, updatedAt }
+ *   Firestore  players/{docId}/photos/{taskId} = { data:<compressed dataURL> }
+ *   Auth       anonymous (gives request.auth so the rules can require it)
+ *   (No Cloud Storage — stays on the free Spark plan, no credit card.)
+ *
+ * Login is name + family password: docId is derived from the name; the
+ * password is compared directly. It is stored in PLAINTEXT on purpose so a
+ * ward admin can look it up in the Firestore console for members who forget
+ * (there is no reset flow). A light gate for low-stakes sharing only — see
+ * SETUP-FIREBASE.md.
+ * ---------------------------------------------------------------------- */
+(function () {
+  "use strict";
+
+  var Cloud = (window.Cloud = {
+    enabled: false,   // true once Firebase is configured AND anon sign-in ok
+    ready: null,      // Promise that resolves when sign-in settles (or nulls)
+    uid: null
+  });
+
+  var cfg = window.FIREBASE_CONFIG || {};
+  function looksConfigured() {
+    return typeof firebase !== "undefined" && firebase.initializeApp &&
+      cfg.apiKey && cfg.apiKey.indexOf("PASTE_") !== 0 &&
+      cfg.projectId && cfg.projectId.indexOf("PASTE_") !== 0;
+  }
+
+  // ---- helpers that don't need Firebase -----------------------------------
+  function nameKey(name) {
+    return String(name || "").trim().toLowerCase().replace(/\s+/g, " ");
+  }
+  function docId(name) {
+    return nameKey(name).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "player";
+  }
+  Cloud.nameKey = nameKey;
+  Cloud.docId = docId;
+
+  // ---- init ---------------------------------------------------------------
+  var db = null, auth = null;
+  if (looksConfigured()) {
+    try {
+      firebase.initializeApp(cfg);
+      auth = firebase.auth();
+      db = firebase.firestore();
+      Cloud.enabled = true;
+      Cloud.ready = auth.signInAnonymously()
+        .then(function (cred) { Cloud.uid = cred.user && cred.user.uid; })
+        .catch(function (e) {
+          Cloud.enabled = false;
+          console.warn("[Cloud] anonymous sign-in failed — running local only.", e);
+        });
+    } catch (e) {
+      Cloud.enabled = false;
+      console.warn("[Cloud] init failed — running local only.", e);
+    }
+  }
+  if (!Cloud.ready) Cloud.ready = Promise.resolve();
+
+  // ---- players ------------------------------------------------------------
+  // Returns the stored player object, or null if that name isn't taken yet.
+  Cloud.getPlayer = function (name) {
+    if (!Cloud.enabled) return Promise.resolve(null);
+    return db.collection("players").doc(docId(name)).get()
+      .then(function (snap) { return snap.exists ? snap.data() : null; });
+  };
+  // Every player (for the Ward View wall). Returns an array, or null if the
+  // cloud is off / unreachable so the caller can fall back to local accounts.
+  Cloud.listPlayers = function () {
+    if (!Cloud.enabled) return Promise.resolve(null);
+    return db.collection("players").get().then(function (snap) {
+      var out = [];
+      snap.forEach(function (d) { var p = d.data(); p.id = d.id; out.push(p); });
+      return out;
+    }).catch(function () { return null; });
+  };
+
+  // Create or merge-update a player document.
+  // NOTE: `password` is stored in PLAINTEXT on purpose, so a ward admin can look
+  // it up in the Firestore console for members who forget it. This is a
+  // deliberate low-stakes trade-off — see SETUP-FIREBASE.md.
+  Cloud.savePlayer = function (player) {
+    if (!Cloud.enabled) return Promise.resolve();
+    var data = {
+      name: player.name,
+      nameKey: player.nameKey || nameKey(player.name),
+      password: player.password || "",
+      done: player.done || {},
+      preferences: player.preferences || {},
+      seed: player.seed || null,
+      updatedAt: Date.now()
+    };
+    if (player.createdAt) data.createdAt = player.createdAt;
+    return db.collection("players").doc(docId(player.name)).set(data, { merge: true });
+  };
+
+  // ---- photos (Firestore, NO Cloud Storage — stays on the free plan) ------
+  // Each photo is a compressed data URL in its own sub-doc so it sits under
+  // Firestore's 1 MiB/document limit. app.js compresses to fit before saving.
+  function photoDoc(name, taskId) {
+    return db.collection("players").doc(docId(name)).collection("photos").doc(taskId);
+  }
+  Cloud.savePhoto = function (name, taskId, dataURL) {
+    if (!Cloud.enabled) return Promise.reject(new Error("cloud off"));
+    return photoDoc(name, taskId).set({ data: dataURL, updatedAt: Date.now() });
+  };
+  Cloud.getPhoto = function (name, taskId) {
+    if (!Cloud.enabled) return Promise.resolve(null);
+    return photoDoc(name, taskId).get()
+      .then(function (s) { return s.exists ? (s.data().data || null) : null; });
+  };
+  Cloud.deletePhoto = function (name, taskId) {
+    if (!Cloud.enabled) return Promise.resolve();
+    return photoDoc(name, taskId).delete().catch(function () { /* already gone */ });
+  };
+})();
