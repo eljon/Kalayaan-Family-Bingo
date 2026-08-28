@@ -131,6 +131,7 @@ older version by URL slug**:
 | `/v95`   | Version 95 snapshot (keep card tape near centre — offset capped to ±30% of its width) |
 | `/v96`   | Version 96 snapshot (card view: red-sharpie X/Y stat top-right, name left, switch removed; save per-task completion time) |
 | `/v97`   | Version 97 snapshot (tap any wall card → full card view; read-only unless signed in to it; Back-to-wall) |
+| `/v98`   | Version 98 snapshot (after a task completes: featured, branded share card + Web Share button) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
