@@ -146,6 +146,7 @@ older version by URL slug**:
 | `/v110`  | Version 110 snapshot (shared photo/card get a wall-style tape strip and a randomised tilt) |
 | `/v111`  | Version 111 snapshot (larger tape — 50% bigger — on the shared photo/card) |
 | `/v112`  | Version 112 snapshot (green tape, larger again; the shared card gets a tape on each of its four corners) |
+| `/v113`  | Version 113 snapshot (back to a single tape; tape length is now at least 30% of the photo/card width) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
