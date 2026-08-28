@@ -143,6 +143,7 @@ older version by URL slug**:
 | `/v107`  | Version 107 snapshot (stickers keep their aspect ratio in the shared image; taller, responsive action buttons) |
 | `/v108`  | Version 108 snapshot (bolder, even fraying on the shared card so the torn-paper edge stays visible) |
 | `/v109`  | Version 109 snapshot (Facebook-friendly shares: landscape/square layout with a festive brand column beside the photo/card) |
+| `/v110`  | Version 110 snapshot (shared photo/card get a wall-style tape strip and a randomised tilt) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
