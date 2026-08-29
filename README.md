@@ -159,6 +159,7 @@ older version by URL slug**:
 | `/v123`  | Version 123 snapshot (taller Join / Sign in button) |
 | `/v124`  | Version 124 snapshot (wall tape anchored to the paper's frayed visible edge so it no longer floats above the card) |
 | `/v125`  | Version 125 snapshot (tapping a wall card zooms it up into the card view; card view now sits on the corkboard for continuity) |
+| `/v126`  | Version 126 snapshot (leaving the card view — Wall button or pinch-in — zooms the card back down into its slot on the Wall) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
