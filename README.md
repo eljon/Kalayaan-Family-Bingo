@@ -169,6 +169,7 @@ older version by URL slug**:
 | `/v133`  | Version 133 snapshot (card-share image reverts each done cell to a framed Polaroid photo instead of the full-bleed photo fill; the on-screen board still fills the cell) |
 | `/v134`  | Version 134 snapshot (fix the grey gradient behind the shared-card Polaroids — kill the dark title scrim and the leftover cell mask in the share capture) |
 | `/v135`  | Version 135 snapshot (really fix the grey box behind shared-card Polaroids — rebuild each done cell's photo as a clean div+img Polaroid in the capture, discarding the html2canvas-hostile button/mask/outline stack) |
+| `/v136`  | Version 136 snapshot (enlarge the shared-card Polaroids to fill the cell's photo area with only a thin white margin) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
