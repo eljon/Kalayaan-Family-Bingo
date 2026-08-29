@@ -172,6 +172,7 @@ older version by URL slug**:
 | `/v136`  | Version 136 snapshot (enlarge the shared-card Polaroids to fill the cell's photo area with only a thin white margin) |
 | `/v137`  | Version 137 snapshot (shared-card Polaroids now cover the full cell photo area — the photo fills both width and height, cropping overflow, instead of leaving gaps) |
 | `/v138`  | Version 138 snapshot (Wall completed cells drop the photo for a solid accent-colour fill with a bold white sharpie check; unfinished cells are faded + desaturated so progress stands out) |
+| `/v139`  | Version 139 snapshot (fix the blink when tapping a Wall card — the card-view zoom now seats the card at the mini-card rect before the first paint, so it grows smoothly with no full-size flash) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
