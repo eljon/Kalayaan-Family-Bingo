@@ -157,6 +157,7 @@ older version by URL slug**:
 | `/v121`  | Version 121 snapshot (wall progress shows the card view's red-sharpie "X/12" stat instead of the progress bar) |
 | `/v122`  | Version 122 snapshot (wall "X/12" stat sits to the right of the family name, adding no vertical space) |
 | `/v123`  | Version 123 snapshot (taller Join / Sign in button) |
+| `/v124`  | Version 124 snapshot (wall tape anchored to the paper's frayed visible edge so it no longer floats above the card) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
