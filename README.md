@@ -152,6 +152,7 @@ older version by URL slug**:
 | `/v116`  | Version 116 snapshot (completed cells: the photo fills the whole cell as its background, with the title outlined for readability) |
 | `/v117`  | Version 117 snapshot (the photo fills the cell's exact hand-drawn outline shape, with the coloured outline redrawn on top) |
 | `/v118`  | Version 118 snapshot (wall tape sits lower so well over 40% of it always touches the card) |
+| `/v119`  | Version 119 snapshot (themed sign-in/sign-up modal with a mode toggle; wall cards show per-card progress and a unique hand-drawn green check on each done task) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
