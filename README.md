@@ -155,6 +155,7 @@ older version by URL slug**:
 | `/v119`  | Version 119 snapshot (themed sign-in/sign-up modal with a mode toggle; wall cards show per-card progress and a unique hand-drawn green check on each done task) |
 | `/v120`  | Version 120 snapshot (wall progress now uses the card view's exact progress component — same markup, classes, text and count) |
 | `/v121`  | Version 121 snapshot (wall progress shows the card view's red-sharpie "X/12" stat instead of the progress bar) |
+| `/v122`  | Version 122 snapshot (wall "X/12" stat sits to the right of the family name, adding no vertical space) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
