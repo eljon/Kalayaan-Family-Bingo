@@ -165,6 +165,7 @@ older version by URL slug**:
 | `/v129`  | Version 129 snapshot (the "Your card!" note is a hand-drawn curved arrow pointer with a barbed head that curves down and touches the top of your card) |
 | `/v130`  | Version 130 snapshot (redraw the "Your card!" arrow as a bold amber "swoosh" — thin tail, big crescent arc, barbed head — that sweeps down to point at your card, with the text lettered in the hook) |
 | `/v131`  | Version 131 snapshot (remove the "Your card!" lettering for now — the amber swoosh arrow alone points at your card) |
+| `/v132`  | Version 132 snapshot (remove the "Your card!" arrow entirely; your own card still sorts to the first Wall slot) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
