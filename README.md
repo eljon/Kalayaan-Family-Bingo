@@ -150,6 +150,7 @@ older version by URL slug**:
 | `/v114`  | Version 114 snapshot (share tape takes a random banner colour each render) |
 | `/v115`  | Version 115 snapshot (drop icons from the share buttons; coverflow puts Share under the image with Replace/Remove below) |
 | `/v116`  | Version 116 snapshot (completed cells: the photo fills the whole cell as its background, with the title outlined for readability) |
+| `/v117`  | Version 117 snapshot (the photo fills the cell's exact hand-drawn outline shape, with the coloured outline redrawn on top) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
