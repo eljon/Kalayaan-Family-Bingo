@@ -239,6 +239,23 @@
       }
     }
   }
+  // Shrink each Wall card's family name until it fits its (single-line) name box
+  // — no cropping — however long the name is.
+  function fitWardNames() {
+    if (!el.wardGrid) return;
+    var boxes = el.wardGrid.querySelectorAll(".wm-name");
+    for (var i = 0; i < boxes.length; i++) {
+      var box = boxes[i], t = box.querySelector(".wm-name-t");
+      if (!t) continue;
+      t.style.fontSize = "";                 // reset to the CSS-driven size
+      var size = parseFloat(getComputedStyle(t).fontSize) || 12;
+      var min = 6, guard = 0;
+      while (size > min && guard < 80 &&
+             (t.scrollWidth > box.clientWidth + 1 || t.scrollHeight > box.clientHeight + 1)) {
+        size -= 0.5; t.style.fontSize = size + "px"; guard++;
+      }
+    }
+  }
   var _fitPending = false;
   function scheduleFit() {
     if (_fitPending) return;
@@ -246,6 +263,7 @@
     requestAnimationFrame(function () {
       _fitPending = false;
       fitTitles();
+      fitWardNames();
     });
   }
   window.addEventListener("resize", scheduleFit);
@@ -745,6 +763,12 @@
     var nm = (name || "").trim();
     return /family\s*$/i.test(nm) ? nm : (nm + " Family");
   }
+  // Just the family's name, without a trailing "Family" — used on the Wall and
+  // card view where the "Family" word is redundant and eats space.
+  function shortName(name) {
+    var nm = (name || "").trim().replace(/\s*family\s*$/i, "").trim();
+    return nm || (name || "").trim();
+  }
 
   // Which primary view is on screen: "ward" (everyone) or "board" (your card).
   function showView(which) {
@@ -884,10 +908,15 @@
 
     var paper = document.createElement("div"); paper.className = "wm-paper";
 
+    // Name (no trailing "Family"), centred and auto-shrunk to fit — the inner
+    // span is what fitWardNames() measures/scales.
     var name = document.createElement("strong"); name.className = "wm-name";
-    name.textContent = displayName(p.name);
+    var nameText = document.createElement("span"); nameText.className = "wm-name-t";
+    nameText.textContent = shortName(p.name);
+    name.appendChild(nameText);
 
-    // Per-card progress — the card view's red-sharpie "X/12" stat.
+    // Per-card progress — the card view's red-sharpie "X/12" stat, tucked into
+    // the upper-right corner above the name.
     var stat = document.createElement("span"); stat.className = "wm-stat";
     stat.textContent = Object.keys(p.done || {}).length + "/" + TASKS.length;
 
@@ -918,9 +947,9 @@
     });
     activeSeed = prevSeed;
 
-    // Name (left) + red "X/12" stat (right) share one row — no extra height.
+    // Stat pinned to the upper-right, name centred on the line below it.
     var head = document.createElement("div"); head.className = "wm-head";
-    head.appendChild(name); head.appendChild(stat);
+    head.appendChild(stat); head.appendChild(name);
     paper.appendChild(head); paper.appendChild(board);
     applyWornEdge(paper, seed, 240, 336);           // the saved fray / wear
 
@@ -1090,6 +1119,7 @@
       el.wardCount.textContent = players.length + (players.length === 1 ? " family" : " families") +
         (finished ? " · " + finished + " done 🏆" : "");
     }
+    scheduleFit();   // shrink any long family names to fit their name box
   }
   function renderWard() {
     revokeUrls();
@@ -1154,7 +1184,7 @@
     if (el.boardShare) el.boardShare.hidden = boardReadOnly;   // sharing is owner-only
     activeSeed = seedOf(boardAcct);
     el.accountName.textContent = boardAcct.name;
-    if (el.cardName) el.cardName.textContent = displayName(boardAcct.name);
+    if (el.cardName) el.cardName.textContent = shortName(boardAcct.name);
     if (el.cardStat) el.cardStat.textContent = Object.keys(boardAcct.done || {}).length + "/" + TASKS.length;
     applyWornEdge(document.querySelector(".card-paper"), activeSeed);
     scheduleFit();
