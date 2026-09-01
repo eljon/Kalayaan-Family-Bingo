@@ -1050,15 +1050,28 @@
   }
 
   function renderWardGrid(players) {
-    // The signed-in family's own card sorts to the very first slot (upper-left);
-    // everyone else keeps their join order.
+    // Leaderboard order: the signed-in family's own card is pinned to the very
+    // first slot (upper-left); everyone else is ranked by how many tasks they've
+    // completed (most first), then — on a tie — by who most recently completed
+    // their latest task, then by join order as a stable fallback.
     var myId = current && current.id;
     function idOf(p) { return p.id || Cloud.docId(p.name); }
+    function doneCount(p) { return Object.keys(p.done || {}).length; }
+    function latestDone(p) {
+      var v = 0, d = p.done || {};
+      for (var k in d) { if (d[k] > v) v = d[k]; }
+      return v;
+    }
     players = (players || []).slice().sort(function (a, b) {
       var am = myId && idOf(a) === myId, bm = myId && idOf(b) === myId;
-      if (am && !bm) return -1;
+      if (am && !bm) return -1;                       // your own card is always first
       if (bm && !am) return 1;
-      return (a.createdAt || 0) - (b.createdAt || 0);
+      if (am && bm) return 0;
+      var d = doneCount(b) - doneCount(a);             // more completed first
+      if (d) return d;
+      var l = latestDone(b) - latestDone(a);           // tie: latest completion first
+      if (l) return l;
+      return (a.createdAt || 0) - (b.createdAt || 0);  // stable fallback
     });
     el.wardGrid.innerHTML = "";
     if (!players.length) {
