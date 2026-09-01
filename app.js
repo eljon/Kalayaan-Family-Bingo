@@ -1003,7 +1003,7 @@
     var rects = cards.map(function (c) { return c.getBoundingClientRect(); });   // read first
     cards.forEach(function (card, i) {
       var r = rects[i];
-      if (!r.width) { card.__intro = null; return; }
+      if (!r.width) { card.__intro = null; card.style.visibility = ""; return; }
       var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
       var ang = Math.random() * Math.PI * 2;
       var dx = Math.cos(ang), dy = Math.sin(ang);        // fly-IN direction
@@ -1195,10 +1195,13 @@
       return;
     }
     el.wardEmpty.hidden = true;
-    var finished = 0, cardEls = [];
+    var finished = 0, cardEls = [], hideForIntro = !wallIntroDone && !prefersReduced();
     players.forEach(function (p) {
       if (Object.keys(p.done || {}).length === TASKS.length) finished++;
       var c = buildMiniCard(p);
+      // Until the fly-in intro plays, keep new cards hidden (they still hold
+      // their grid slot) so they never paint in place before the animation.
+      if (hideForIntro) c.style.visibility = "hidden";
       cardEls.push(c);
       el.wardGrid.appendChild(c);
     });
@@ -1227,8 +1230,12 @@
     if (wallIntroDone) return;
     wallIntroDone = true;
     var cards = [].slice.call(el.wardGrid.querySelectorAll(".ward-mini"));
-    if (!cards.length || prefersReduced()) return;
-    cards.forEach(function (c) { c.style.visibility = "hidden"; });   // keep layout, hide paint
+    if (!cards.length || prefersReduced()) {
+      cards.forEach(function (c) { c.style.visibility = ""; });   // no intro: just show them
+      return;
+    }
+    // Cards were built hidden (see renderWardGrid); reveal happens in
+    // introAnimateWall as each one is seated off-screen.
     var fire = function () {
       // Two frames after fonts settle: name auto-fit has run and the board is
       // at its final size, so measuring + flying can't cause a resize.
@@ -2911,9 +2918,10 @@
       showToast("This browser can't store photos. Try a modern browser.");
     }
     var firstRender = renderWard();  // Ward View is the default landing screen
-    silentResume().then(function () {
-      // Play the fly-in intro on the SETTLED Wall: after the "You"-badge
-      // re-render when signed in, otherwise on the first render's cards.
+    // Play the fly-in intro on the SETTLED Wall: after the "You"-badge re-render
+    // when signed in, otherwise on the first render's cards. The catch() ensures
+    // the cards (built hidden) are always revealed even if resume fails.
+    silentResume().catch(function () {}).then(function () {
       (current ? renderWard() : firstRender).then(playWallIntroOnce);
     });
   }
