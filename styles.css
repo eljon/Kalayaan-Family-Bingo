@@ -1309,12 +1309,12 @@ body.board-active .cell-cam .cam-tx { font-size: clamp(11px, 3vw, 15px); }
 /* Stat on its own line in the upper-right, name centred on the line below —
    fixed height so the board is the same size on every card. */
 .wm-head {
-  flex: none; height: 3.1em; margin-bottom: 4%;
+  flex: none; margin-bottom: 3px;   /* same small gap below the name as above it */
   display: flex; flex-direction: column; min-width: 0;
 }
 .wm-name {
-  flex: 1 1 auto; min-width: 0; min-height: 0; width: 100%;
-  display: flex; align-items: flex-start; justify-content: center;
+  flex: none; min-width: 0; width: 100%;
+  display: flex; justify-content: center;
   margin-top: 3px;   /* small, fixed gap under the stat */
   overflow: hidden;
 }

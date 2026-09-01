@@ -178,6 +178,7 @@ older version by URL slug**:
 | `/v142`  | Version 142 snapshot (Wall card header: X/12 stat moves to the upper-right above a centered, auto-shrinking name; "Family" is dropped from the name on the Wall and card view) |
 | `/v143`  | Version 143 snapshot (tighten the vertical gap between the X/12 stat and the family name on Wall cards) |
 | `/v144`  | Version 144 snapshot (set the Wall stat-to-name gap to a fixed 3px — v143 overlapped them by ~3px) |
+| `/v145`  | Version 145 snapshot (match the Wall name-to-cards gap to the name-to-stat gap — both 3px — by sizing the header to its content) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
