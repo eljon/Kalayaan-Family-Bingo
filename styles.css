@@ -1315,7 +1315,7 @@ body.board-active .cell-cam .cam-tx { font-size: clamp(11px, 3vw, 15px); }
 .wm-name {
   flex: 1 1 auto; min-width: 0; min-height: 0; width: 100%;
   display: flex; align-items: flex-start; justify-content: center;
-  margin-top: -0.25em;   /* sit close under the stat, not centred in the gap */
+  margin-top: 3px;   /* small, fixed gap under the stat */
   overflow: hidden;
 }
 .wm-name-t {
