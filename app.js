@@ -1014,14 +1014,17 @@
       ts = ts.filter(function (t) { return t > 0 && isFinite(t); });
       var edge = ts.length ? Math.min.apply(null, ts) : Math.max(W, H);
       var L = edge + Math.hypot(r.width, r.height) + 24;  // clear the edge fully
-      var rot = card.style.getPropertyValue("--rot") || "0deg";
+      // Preserve each element's own resting transform (cards use --rot, the
+      // "X families" note has its own tilt) by reading its computed matrix.
+      var base = getComputedStyle(card).transform;
+      if (base === "none") base = "";
       var tape = card.querySelector(".wm-tape");
       card.__intro = {
-        off: "translate(" + (-dx * L).toFixed(1) + "px," + (-dy * L).toFixed(1) + "px) rotate(" + rot + ")",
-        rest: "translate(0,0) rotate(" + rot + ")",
+        off: "translate(" + (-dx * L).toFixed(1) + "px," + (-dy * L).toFixed(1) + "px) " + base,
+        rest: base || "none",
         dur: L / SPEED,
         delay: Math.random() * 340,                       // staggered starts
-        rot: rot, tape: tape
+        tape: tape
       };
       maxTotal = Math.max(maxTotal, card.__intro.delay + card.__intro.dur);
       // Seat the off-screen start + hidden tape synchronously (before first paint),
@@ -1205,7 +1208,12 @@
       cardEls.push(c);
       el.wardGrid.appendChild(c);
     });
-    if (el.corkNote) el.corkNote.hidden = false;
+    if (el.corkNote) {
+      el.corkNote.hidden = false;
+      // The "X families" note flies in with the cards — hide it (keeping its
+      // layout) until then so no blank paper shows first.
+      el.corkNote.style.visibility = hideForIntro ? "hidden" : "";
+    }
     if (el.wardCount) {
       el.wardCount.textContent = players.length + (players.length === 1 ? " family" : " families") +
         (finished ? " · " + finished + " done 🏆" : "");
@@ -1230,6 +1238,8 @@
     if (wallIntroDone) return;
     wallIntroDone = true;
     var cards = [].slice.call(el.wardGrid.querySelectorAll(".ward-mini"));
+    // The "X families" note flies in alongside the cards (same staggered window).
+    if (el.corkNote && !el.corkNote.hidden) cards.push(el.corkNote);
     if (!cards.length || prefersReduced()) {
       cards.forEach(function (c) { c.style.visibility = ""; });   // no intro: just show them
       return;

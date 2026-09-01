@@ -182,6 +182,7 @@ older version by URL slug**:
 | `/v146`  | Version 146 snapshot (Wall intro: cards fly in from random off-screen directions at a shared speed with staggered starts, and each tape pops in once its card lands) |
 | `/v147`  | Version 147 snapshot (fix Wall intro layout jump: settle the board size first, hide cards until then, and lock page scroll during the flight so nothing shrinks/grows) |
 | `/v148`  | Version 148 snapshot (fix Wall intro flash: build the cards already hidden so they never paint in place before the fly-in) |
+| `/v149`  | Version 149 snapshot (the "X families" note flies in with the cards, hidden until then — no blank paper first, and not after all the cards) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
