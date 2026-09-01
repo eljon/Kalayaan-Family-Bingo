@@ -990,19 +990,18 @@
     }
     var W = window.innerWidth, H = window.innerHeight;
     var SPEED = 1.25;                // px per ms — identical for every card
-    // Lock page scrolling for the flight: elements translated far off-screen
-    // would otherwise grow the scrollable area, toggle a scrollbar, and
-    // shrink/grow the whole (viewport-width-based) board around the animation.
-    // Compensate for any scrollbar that was present so the width never shifts.
-    var docEl = document.documentElement;
-    var sbw = window.innerWidth - docEl.clientWidth;
-    var prevOverflow = docEl.style.overflow, prevPad = docEl.style.paddingRight;
-    docEl.style.overflow = "hidden";
-    if (sbw > 0) docEl.style.paddingRight = sbw + "px";
+    // Clip the flight inside the Ward container. Elements translated off-screen
+    // would otherwise extend the document's scrollable area, toggle a scrollbar,
+    // and shrink/grow the whole (viewport-width-based) board. Clipping here keeps
+    // their overflow out of the document entirely — no scrollbar can appear, so
+    // nothing resizes. (Cards still read as flying in from the screen edges.)
+    var clipEl = el.ward || document.documentElement;
+    var prevOverflow = clipEl.style.overflow;
+    clipEl.style.overflow = "hidden";
     var unlocked = false;
     function unlock() {
       if (unlocked) return; unlocked = true;
-      docEl.style.overflow = prevOverflow; docEl.style.paddingRight = prevPad;
+      clipEl.style.overflow = prevOverflow;
     }
     // Compute a fly-in for one element given a start delay; returns the last card
     // arrival time so the note can be scheduled after every card has landed.
