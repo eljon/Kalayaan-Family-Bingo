@@ -1734,22 +1734,22 @@
                 var outline = cell.querySelector(".cell-outline");
                 if (outline) outline.remove();
                 var src = img && img.getAttribute("src");
-                // The frame fills the cell's whole photo area (full width + the
-                // remaining height below the title) with only a thin white
-                // Polaroid margin.
+                // The whole photo is always shown (never cropped). To stay large,
+                // the Polaroid is allowed to spill a little past the cell outline,
+                // so let the cell overflow.
+                cell.style.overflow = "visible";
                 var box = doc.createElement("div");
                 box.style.cssText = "width:100%;flex:1 1 auto;min-height:0;" +
-                  "margin-top:3px;overflow:hidden;display:flex;" +
-                  "align-items:center;justify-content:center;" +
-                  "background:#fff;box-sizing:border-box;" +
-                  "border:2px solid #fff;border-bottom-width:6px;";
+                  "margin-top:3px;position:relative;z-index:1;display:flex;" +
+                  "align-items:center;justify-content:center;";
                 var pic = doc.createElement("img");
                 if (src) pic.setAttribute("src", src);
-                // Cover the frame (crop the overflow) without object-fit, which
-                // html2canvas ignores: min-*:100% + auto sizing scales the photo
-                // up to fill both dimensions, and the box clips the overflow.
-                pic.style.cssText = "display:block;flex:none;" +
-                  "min-width:100%;min-height:100%;width:auto;height:auto;";
+                // Contain (whole photo, aspect kept — no object-fit, which
+                // html2canvas ignores) but allowed to exceed the frame a little
+                // (max 110%) so it fills more without any cropping.
+                pic.style.cssText = "display:block;max-width:110%;max-height:110%;" +
+                  "width:auto;height:auto;background:#fff;box-sizing:border-box;" +
+                  "border:2px solid #fff;border-bottom-width:6px;";
                 box.appendChild(pic);
                 if (btn) cell.replaceChild(box, btn); else cell.appendChild(box);
                 var title = cell.querySelector(".cell-title");
