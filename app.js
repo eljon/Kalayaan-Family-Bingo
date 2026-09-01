@@ -976,6 +976,72 @@
     catch (e) { return false; }
   }
 
+  // One-time Wall intro: each card flies in from just off-screen in a random
+  // direction to its slot. Starts are staggered (not all at once) but every
+  // card moves at the SAME SPEED, so its travel time is proportional to its
+  // distance. When a card lands, its tape pops into place.
+  var wallIntroDone = false;
+  function introAnimateWall(cards) {
+    if (!cards || !cards.length || prefersReduced()) return;
+    var W = window.innerWidth, H = window.innerHeight;
+    var SPEED = 1.25;                // px per ms — identical for every card
+    var rects = cards.map(function (c) { return c.getBoundingClientRect(); });   // read first
+    cards.forEach(function (card, i) {
+      var r = rects[i];
+      if (!r.width) { card.__intro = null; return; }
+      var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      var ang = Math.random() * Math.PI * 2;
+      var dx = Math.cos(ang), dy = Math.sin(ang);        // fly-IN direction
+      // How far back along -dir until the card is fully off-screen.
+      var ux = -dx, uy = -dy, ts = [];
+      if (ux > 0) ts.push((W - cx) / ux); else if (ux < 0) ts.push(-cx / ux);
+      if (uy > 0) ts.push((H - cy) / uy); else if (uy < 0) ts.push(-cy / uy);
+      ts = ts.filter(function (t) { return t > 0 && isFinite(t); });
+      var edge = ts.length ? Math.min.apply(null, ts) : Math.max(W, H);
+      var L = edge + Math.hypot(r.width, r.height) + 24;  // clear the edge fully
+      var rot = card.style.getPropertyValue("--rot") || "0deg";
+      var tape = card.querySelector(".wm-tape");
+      card.__intro = {
+        off: "translate(" + (-dx * L).toFixed(1) + "px," + (-dy * L).toFixed(1) + "px) rotate(" + rot + ")",
+        rest: "translate(0,0) rotate(" + rot + ")",
+        dur: L / SPEED,
+        delay: Math.random() * 340,                       // staggered starts
+        rot: rot, tape: tape
+      };
+      // Seat the off-screen start + hidden tape synchronously (before first paint).
+      card.style.transition = "none";
+      card.style.transform = card.__intro.off;
+      if (tape) {
+        tape.style.transition = "none";
+        tape.style.transform = "translateX(calc(-50% + var(--tape-dx,0px))) rotate(var(--tape-rot,0deg)) scale(0)";
+        tape.style.opacity = "0";
+      }
+    });
+    if (cards[0]) cards[0].getBoundingClientRect();        // commit the start state
+    requestAnimationFrame(function () {
+      cards.forEach(function (card) {
+        var d = card.__intro; if (!d) return;
+        card.style.transition = "transform " + d.dur.toFixed(0) + "ms cubic-bezier(.2,.72,.3,1) " + d.delay.toFixed(0) + "ms";
+        card.style.transform = d.rest;
+        var tapeAt = d.delay + d.dur;                       // tape enters once landed
+        if (d.tape) {
+          d.tape.style.transition =
+            "transform 300ms cubic-bezier(.34,1.56,.64,1) " + tapeAt.toFixed(0) + "ms," +
+            "opacity 170ms ease " + tapeAt.toFixed(0) + "ms";
+          d.tape.style.transform = "translateX(calc(-50% + var(--tape-dx,0px))) rotate(var(--tape-rot,0deg)) scale(1)";
+          d.tape.style.opacity = "1";
+        }
+        // Once it all settles, drop the inline styles so hover / zoom behave.
+        var total = d.delay + d.dur + 480;
+        setTimeout(function () {
+          card.style.transition = ""; card.style.transform = "";
+          if (d.tape) { d.tape.style.transition = ""; d.tape.style.transform = ""; d.tape.style.opacity = ""; }
+          card.__intro = null;
+        }, total + 60);
+      });
+    });
+  }
+
   // Zoom the tapped wall card up until it becomes the full card view (FLIP:
   // render the board, then animate the card frame from the mini card's
   // on-screen rect out to its full size).
@@ -1109,10 +1175,12 @@
       return;
     }
     el.wardEmpty.hidden = true;
-    var finished = 0;
+    var finished = 0, cardEls = [];
     players.forEach(function (p) {
       if (Object.keys(p.done || {}).length === TASKS.length) finished++;
-      el.wardGrid.appendChild(buildMiniCard(p));
+      var c = buildMiniCard(p);
+      cardEls.push(c);
+      el.wardGrid.appendChild(c);
     });
     if (el.corkNote) el.corkNote.hidden = false;
     if (el.wardCount) {
@@ -1120,6 +1188,8 @@
         (finished ? " · " + finished + " done 🏆" : "");
     }
     scheduleFit();   // shrink any long family names to fit their name box
+    // The one-time fly-in intro is played from boot() once the Wall has settled
+    // (see playWallIntroOnce) — not here, since boot renders the Wall twice.
   }
   function renderWard() {
     revokeUrls();
@@ -1128,7 +1198,13 @@
     closeJoin();
     closeWardDetail();
     showView("ward");
-    fetchPlayers().then(renderWardGrid);
+    return fetchPlayers().then(renderWardGrid);
+  }
+  // Play the fly-in intro once, on the Wall's current (settled) cards.
+  function playWallIntroOnce() {
+    if (wallIntroDone) return;
+    wallIntroDone = true;
+    introAnimateWall([].slice.call(el.wardGrid.querySelectorAll(".ward-mini")));
   }
 
   /* ---- Read-only detail: one family's completed photos ---- */
@@ -2801,9 +2877,11 @@
     if (!("indexedDB" in window)) {
       showToast("This browser can't store photos. Try a modern browser.");
     }
-    renderWard();                    // Ward View is the default landing screen
+    var firstRender = renderWard();  // Ward View is the default landing screen
     silentResume().then(function () {
-      if (current) renderWard();     // re-render so your card shows the "You" badge
+      // Play the fly-in intro on the SETTLED Wall: after the "You"-badge
+      // re-render when signed in, otherwise on the first render's cards.
+      (current ? renderWard() : firstRender).then(playWallIntroOnce);
     });
   }
 

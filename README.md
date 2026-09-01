@@ -179,6 +179,7 @@ older version by URL slug**:
 | `/v143`  | Version 143 snapshot (tighten the vertical gap between the X/12 stat and the family name on Wall cards) |
 | `/v144`  | Version 144 snapshot (set the Wall stat-to-name gap to a fixed 3px — v143 overlapped them by ~3px) |
 | `/v145`  | Version 145 snapshot (match the Wall name-to-cards gap to the name-to-stat gap — both 3px — by sizing the header to its content) |
+| `/v146`  | Version 146 snapshot (Wall intro: cards fly in from random off-screen directions at a shared speed with staggered starts, and each tape pops in once its card lands) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
