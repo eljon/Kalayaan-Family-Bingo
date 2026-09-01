@@ -985,6 +985,21 @@
     if (!cards || !cards.length || prefersReduced()) return;
     var W = window.innerWidth, H = window.innerHeight;
     var SPEED = 1.25;                // px per ms — identical for every card
+    // Lock page scrolling for the flight: cards translated far off-screen would
+    // otherwise grow the scrollable area, toggle a scrollbar, and shrink/grow
+    // the whole (viewport-width-based) board around the animation. Compensate
+    // for any scrollbar that was present so the layout width never shifts.
+    var docEl = document.documentElement;
+    var sbw = window.innerWidth - docEl.clientWidth;
+    var prevOverflow = docEl.style.overflow, prevPad = docEl.style.paddingRight;
+    docEl.style.overflow = "hidden";
+    if (sbw > 0) docEl.style.paddingRight = sbw + "px";
+    var unlocked = false;
+    function unlock() {
+      if (unlocked) return; unlocked = true;
+      docEl.style.overflow = prevOverflow; docEl.style.paddingRight = prevPad;
+    }
+    var maxTotal = 0;
     var rects = cards.map(function (c) { return c.getBoundingClientRect(); });   // read first
     cards.forEach(function (card, i) {
       var r = rects[i];
@@ -1008,7 +1023,10 @@
         delay: Math.random() * 340,                       // staggered starts
         rot: rot, tape: tape
       };
-      // Seat the off-screen start + hidden tape synchronously (before first paint).
+      maxTotal = Math.max(maxTotal, card.__intro.delay + card.__intro.dur);
+      // Seat the off-screen start + hidden tape synchronously (before first paint),
+      // and reveal the card (playWallIntroOnce hid it while layout settled).
+      card.style.visibility = "";
       card.style.transition = "none";
       card.style.transform = card.__intro.off;
       if (tape) {
@@ -1040,6 +1058,8 @@
         }, total + 60);
       });
     });
+    // Re-enable scrolling once the last card + its tape have finished.
+    setTimeout(unlock, maxTotal + 700);
   }
 
   // Zoom the tapped wall card up until it becomes the full card view (FLIP:
@@ -1200,11 +1220,24 @@
     showView("ward");
     return fetchPlayers().then(renderWardGrid);
   }
-  // Play the fly-in intro once, on the Wall's current (settled) cards.
+  // Play the fly-in intro once. The board is laid out and the cards hidden
+  // first, so the cork/board reaches its FINAL size before anything moves — the
+  // fly-in then targets fixed positions and nothing resizes mid-animation.
   function playWallIntroOnce() {
     if (wallIntroDone) return;
     wallIntroDone = true;
-    introAnimateWall([].slice.call(el.wardGrid.querySelectorAll(".ward-mini")));
+    var cards = [].slice.call(el.wardGrid.querySelectorAll(".ward-mini"));
+    if (!cards.length || prefersReduced()) return;
+    cards.forEach(function (c) { c.style.visibility = "hidden"; });   // keep layout, hide paint
+    var fire = function () {
+      // Two frames after fonts settle: name auto-fit has run and the board is
+      // at its final size, so measuring + flying can't cause a resize.
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { introAnimateWall(cards); });
+      });
+    };
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fire).catch(fire);
+    else fire();
   }
 
   /* ---- Read-only detail: one family's completed photos ---- */
