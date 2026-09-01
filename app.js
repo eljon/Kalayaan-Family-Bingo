@@ -981,14 +981,19 @@
   // card moves at the SAME SPEED, so its travel time is proportional to its
   // distance. When a card lands, its tape pops into place.
   var wallIntroDone = false;
-  function introAnimateWall(cards) {
-    if (!cards || !cards.length || prefersReduced()) return;
+  function introAnimateWall(cards, note) {
+    cards = cards || [];
+    if ((!cards.length && !note) || prefersReduced()) {
+      cards.forEach(function (c) { c.style.visibility = ""; });
+      if (note) note.style.visibility = "";
+      return;
+    }
     var W = window.innerWidth, H = window.innerHeight;
     var SPEED = 1.25;                // px per ms — identical for every card
-    // Lock page scrolling for the flight: cards translated far off-screen would
-    // otherwise grow the scrollable area, toggle a scrollbar, and shrink/grow
-    // the whole (viewport-width-based) board around the animation. Compensate
-    // for any scrollbar that was present so the layout width never shifts.
+    // Lock page scrolling for the flight: elements translated far off-screen
+    // would otherwise grow the scrollable area, toggle a scrollbar, and
+    // shrink/grow the whole (viewport-width-based) board around the animation.
+    // Compensate for any scrollbar that was present so the width never shifts.
     var docEl = document.documentElement;
     var sbw = window.innerWidth - docEl.clientWidth;
     var prevOverflow = docEl.style.overflow, prevPad = docEl.style.paddingRight;
@@ -999,15 +1004,14 @@
       if (unlocked) return; unlocked = true;
       docEl.style.overflow = prevOverflow; docEl.style.paddingRight = prevPad;
     }
-    var maxTotal = 0;
-    var rects = cards.map(function (c) { return c.getBoundingClientRect(); });   // read first
-    cards.forEach(function (card, i) {
-      var r = rects[i];
-      if (!r.width) { card.__intro = null; card.style.visibility = ""; return; }
+    // Compute a fly-in for one element given a start delay; returns the last card
+    // arrival time so the note can be scheduled after every card has landed.
+    function computeIntro(el, delay) {
+      var r = el.getBoundingClientRect();
+      if (!r.width) { el.__intro = null; el.style.visibility = ""; return 0; }
       var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
       var ang = Math.random() * Math.PI * 2;
       var dx = Math.cos(ang), dy = Math.sin(ang);        // fly-IN direction
-      // How far back along -dir until the card is fully off-screen.
       var ux = -dx, uy = -dy, ts = [];
       if (ux > 0) ts.push((W - cx) / ux); else if (ux < 0) ts.push(-cx / ux);
       if (uy > 0) ts.push((H - cy) / uy); else if (uy < 0) ts.push(-cy / uy);
@@ -1016,31 +1020,41 @@
       var L = edge + Math.hypot(r.width, r.height) + 24;  // clear the edge fully
       // Preserve each element's own resting transform (cards use --rot, the
       // "X families" note has its own tilt) by reading its computed matrix.
-      var base = getComputedStyle(card).transform;
+      var base = getComputedStyle(el).transform;
       if (base === "none") base = "";
-      var tape = card.querySelector(".wm-tape");
-      card.__intro = {
+      el.__intro = {
         off: "translate(" + (-dx * L).toFixed(1) + "px," + (-dy * L).toFixed(1) + "px) " + base,
         rest: base || "none",
         dur: L / SPEED,
-        delay: Math.random() * 340,                       // staggered starts
-        tape: tape
+        delay: delay,
+        tape: el.querySelector(".wm-tape")
       };
-      maxTotal = Math.max(maxTotal, card.__intro.delay + card.__intro.dur);
-      // Seat the off-screen start + hidden tape synchronously (before first paint),
-      // and reveal the card (playWallIntroOnce hid it while layout settled).
-      card.style.visibility = "";
-      card.style.transition = "none";
-      card.style.transform = card.__intro.off;
-      if (tape) {
-        tape.style.transition = "none";
-        tape.style.transform = "translateX(calc(-50% + var(--tape-dx,0px))) rotate(var(--tape-rot,0deg)) scale(0)";
-        tape.style.opacity = "0";
+      return delay + el.__intro.dur;
+    }
+    // Cards first (staggered random starts), then the note AFTER the last card
+    // has fully landed.
+    var lastCard = 0;
+    cards.forEach(function (card) { lastCard = Math.max(lastCard, computeIntro(card, Math.random() * 340)); });
+    if (note) computeIntro(note, lastCard + 140);
+    var items = note ? cards.concat([note]) : cards;
+    var maxTotal = 0;
+    items.forEach(function (el) {
+      var d = el.__intro; if (!d) return;
+      maxTotal = Math.max(maxTotal, d.delay + d.dur);
+      // Seat the off-screen start + hidden tape synchronously (before first
+      // paint) and reveal (playWallIntroOnce hid it while layout settled).
+      el.style.visibility = "";
+      el.style.transition = "none";
+      el.style.transform = d.off;
+      if (d.tape) {
+        d.tape.style.transition = "none";
+        d.tape.style.transform = "translateX(calc(-50% + var(--tape-dx,0px))) rotate(var(--tape-rot,0deg)) scale(0)";
+        d.tape.style.opacity = "0";
       }
     });
-    if (cards[0]) cards[0].getBoundingClientRect();        // commit the start state
+    if (items[0]) items[0].getBoundingClientRect();        // commit the start state
     requestAnimationFrame(function () {
-      cards.forEach(function (card) {
+      items.forEach(function (card) {
         var d = card.__intro; if (!d) return;
         card.style.transition = "transform " + d.dur.toFixed(0) + "ms cubic-bezier(.2,.72,.3,1) " + d.delay.toFixed(0) + "ms";
         card.style.transform = d.rest;
@@ -1210,7 +1224,7 @@
     });
     if (el.corkNote) {
       el.corkNote.hidden = false;
-      // The "X families" note flies in with the cards — hide it (keeping its
+      // The "X families" note flies in AFTER the cards — hide it (keeping its
       // layout) until then so no blank paper shows first.
       el.corkNote.style.visibility = hideForIntro ? "hidden" : "";
     }
@@ -1238,19 +1252,20 @@
     if (wallIntroDone) return;
     wallIntroDone = true;
     var cards = [].slice.call(el.wardGrid.querySelectorAll(".ward-mini"));
-    // The "X families" note flies in alongside the cards (same staggered window).
-    if (el.corkNote && !el.corkNote.hidden) cards.push(el.corkNote);
-    if (!cards.length || prefersReduced()) {
+    // The "X families" note flies in AFTER all the cards have landed.
+    var note = (el.corkNote && !el.corkNote.hidden) ? el.corkNote : null;
+    if ((!cards.length && !note) || prefersReduced()) {
       cards.forEach(function (c) { c.style.visibility = ""; });   // no intro: just show them
+      if (note) note.style.visibility = "";
       return;
     }
-    // Cards were built hidden (see renderWardGrid); reveal happens in
-    // introAnimateWall as each one is seated off-screen.
+    // Cards/note were built hidden (see renderWardGrid); reveal happens in
+    // introAnimateWall as each is seated off-screen.
     var fire = function () {
       // Two frames after fonts settle: name auto-fit has run and the board is
       // at its final size, so measuring + flying can't cause a resize.
       requestAnimationFrame(function () {
-        requestAnimationFrame(function () { introAnimateWall(cards); });
+        requestAnimationFrame(function () { introAnimateWall(cards, note); });
       });
     };
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(fire).catch(fire);
