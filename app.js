@@ -74,10 +74,22 @@
     return "s" + Math.floor(Math.random() * 1e9).toString(36) + Date.now().toString(36);
   }
 
-  function handDrawnButton(color, seed) {
+  // A wobbly hand-drawn pill outline as an SVG data-URI background.
+  //
+  // IMPORTANT: the SVG is generated at (about) the button's REAL pixel size —
+  // NOT a fixed 150x52 that CSS then stretches to `background-size:100% 100%`.
+  // iOS Safari rasterises a heavily-stretched `preserveAspectRatio="none"` SVG
+  // background flakily (it randomly breaks into disconnected blobs), which is
+  // why buttons looked "broken". Drawing at the true size means no stretch, so
+  // it renders cleanly everywhere — and the rounded ends stay circular.
+  function handDrawnButton(color, seed, W, H) {
     var rng = (seed != null) ? mkRng(seed) : Math.random;
-    var W = 150, H = 52, pad = 5, R = 22;
+    W = Math.max(40, Math.round(W || 150));
+    H = Math.max(24, Math.round(H || 52));
+    var pad = 5, R = Math.min((H - 2 * pad) / 2, (W - 2 * pad) / 2);   // pill ends
     var x0 = pad, y0 = pad, x1 = W - pad, y1 = H - pad;
+    // More points along longer edges so the wobble looks even at any width.
+    var S = Math.max(6, Math.round((x1 - x0 - 2 * R) / 13)), C = 7;
     function build(jit) {
       var pts = [];
       function edge(ax, ay, bx, by, n) {
@@ -86,7 +98,6 @@
       function arc(cx, cy, a0, a1, n) {
         for (var i = 0; i < n; i++) { var a = a0 + (a1 - a0) * (i / n); pts.push([cx + R * Math.cos(a), cy + R * Math.sin(a)]); }
       }
-      var S = 11, C = 7;
       edge(x0 + R, y0, x1 - R, y0, S); arc(x1 - R, y0 + R, -Math.PI / 2, 0, C);
       edge(x1, y0 + R, x1, y1 - R, 2); arc(x1 - R, y1 - R, 0, Math.PI / 2, C);
       edge(x1 - R, y1, x0 + R, y1, S); arc(x0 + R, y1 - R, Math.PI / 2, Math.PI, C);
@@ -99,13 +110,33 @@
       }
       return d + "Z";
     }
-    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' +
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">' +
       // filled, hand-cut crayon pill in the accent colour...
-      '<path d="' + build(1.6) + '" fill="' + color + '" stroke="' + color + '" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>' +
+      '<path d="' + build(1.6) + '" fill="' + color + '" stroke="' + color + '" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>' +
       // ...with a soft darker hand-drawn rim for definition
-      '<path d="' + build(2.4) + '" fill="none" stroke="rgba(0,0,0,0.16)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>' +
+      '<path d="' + build(2.4) + '" fill="none" stroke="rgba(0,0,0,0.16)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>' +
       '</svg>';
     return 'url("data:image/svg+xml,' + encodeURIComponent(svg) + '")';
+  }
+
+  // Paint a button's hand-drawn background at its CURRENT measured size, and
+  // keep it that way: a shared ResizeObserver repaints when the button's size
+  // changes (label swap, viewport resize, orientation), so the SVG is never
+  // stretched. Store the colour/seed on the element so the observer can repaint.
+  var _hdRO = (typeof ResizeObserver === "function") ? new ResizeObserver(function (entries) {
+    entries.forEach(function (e) { hdPaint(e.target); });
+  }) : null;
+  function hdPaint(btn) {
+    if (!btn || !btn._hd) return;
+    var w = btn.offsetWidth, h = btn.offsetHeight;
+    if (w < 8 || h < 8) return;                 // not laid out yet; RO repaints later
+    btn.style.backgroundImage = handDrawnButton(btn._hd.color, btn._hd.seed, w, h);
+  }
+  function hdButton(btn, color, seed) {
+    if (!btn) return;
+    btn._hd = { color: color, seed: seed };
+    hdPaint(btn);
+    if (_hdRO) { try { _hdRO.observe(btn); } catch (e) {} }
   }
 
   // Accent colour per cell (matches the CSS data-accent palette).
@@ -1242,7 +1273,11 @@
       if (l) return l;
       return (a.createdAt || 0) - (b.createdAt || 0);  // stable fallback
     });
-    if (el.wardJoin) el.wardJoin.textContent = isAdmin ? "🔧 Admin mode — tap to exit" : "＋ Join / Sign in";
+    if (el.wardJoin) {
+      el.wardJoin.textContent = isAdmin ? "🔧 Admin mode — tap to exit" : "＋ Join / Sign in";
+      // repaint the hand-drawn pill in the admin colour (and at the new width)
+      if (el.wardJoin._hd) { el.wardJoin._hd.color = isAdmin ? "#c33f2c" : "#e8543f"; hdPaint(el.wardJoin); }
+    }
     el.wardGrid.innerHTML = "";
     if (!players.length) {
       el.wardEmpty.hidden = false;
@@ -1490,8 +1525,9 @@
       var cam = document.createElement("button");
       cam.className = "cell-cam";
       cam.type = "button";
-      cam.style.backgroundImage = handDrawnButton(ACCENTS[task.accent] || "#1f3a5f", cellSeed(task.id) + "|cam");
       cam.innerHTML = CAM_ICON + '<span class="cam-tx">Add Photo</span>';
+      // Painted at its measured size (see hdButton) so the SVG isn't stretched.
+      hdButton(cam, ACCENTS[task.accent] || "#1f3a5f", cellSeed(task.id) + "|cam");
       cam.setAttribute("aria-label", task.title + " — add a photo");
       cam.addEventListener("click", function () { openPicker(task.id); });
       cell.appendChild(cam);
@@ -3075,7 +3111,7 @@
     btn.classList.add("hd-btn");
     if (dark) btn.classList.add("hd-dark");
     btn.style.backgroundColor = "transparent";
-    btn.style.backgroundImage = handDrawnButton(color, ((btn.id || btn.className || "hd") + "|" + color));
+    hdButton(btn, color, (btn.id || btn.className || "hd") + "|" + color);
   }
   function applyHandDrawnButtons() {
     styleHD(el.wardJoin, "#e8543f");

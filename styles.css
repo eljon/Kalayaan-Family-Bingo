@@ -1293,8 +1293,8 @@ body.board-active .cell-cam .cam-tx { font-size: clamp(11px, 3vw, 15px); }
 .cell-admin-del { top: 6px; right: 6px; }
 .wm-admin-del:hover, .cell-admin-del:hover { background: #c33f2c; transform: scale(1.06); }
 .wm-admin-del:active, .cell-admin-del:active { transform: scale(0.94); }
-/* In admin mode the bottom Join button turns into a clear red "exit" pill. */
-body.admin-mode #wardJoin { background: #c33f2c; }
+/* (In admin mode the Join button's hand-drawn pill is repainted a deeper red
+   in JS — see renderWardGrid — since its look is an inline SVG background.) */
 /* A strip of translucent, matte tape holding the card to the board. Its
    position along the top, rotation, width and vertical offset are seeded per
    card (--tape-* set in JS), so every card is taped a little differently. */
