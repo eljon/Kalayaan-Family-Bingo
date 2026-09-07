@@ -1664,15 +1664,14 @@
   // Geometry shared by the height calc and the drawing, so the card can be
   // bottom-anchored over the photo.
   function miniCardGeom(w) {
-    var pad = Math.round(w * 0.07);
-    var cgap = Math.round(w * 0.035);
+    var pad = Math.round(w * 0.08);
+    var cgap = Math.round(w * 0.038);
     var cols = 3, rows = 4;
     var cellW = (w - pad * 2 - cgap * (cols - 1)) / cols;
     var cellH = cellW * 1.12;
-    var headH = Math.round(w * 0.26);           // name + stat band
-    var h = Math.round(pad + headH + rows * cellH + (rows - 1) * cgap + pad);
+    var h = Math.round(pad + rows * cellH + (rows - 1) * cgap + pad);
     return { pad: pad, cgap: cgap, cols: cols, rows: rows,
-             cellW: cellW, cellH: cellH, headH: headH, h: h };
+             cellW: cellW, cellH: cellH, h: h };
   }
   function miniCardHeight(w) { return miniCardGeom(w).h; }
 
@@ -1711,8 +1710,9 @@
     sRoundRect(g, x, y, len, thick, 3); g.stroke();
     g.restore();
   }
-  // The wall card, in miniature: frayed-ish paper, marker family name, red X/12,
-  // and a 3x4 board (done = accent fill + white check; todo = faded outline).
+  // The wall card, in miniature: frayed-ish paper and a 3x4 board (done =
+  // accent fill + white check; todo = faded outline). No name/stat — in the
+  // share layout those already appear as the caption beside it.
   function drawMiniBingoCard(g, x, y, w, acct) {
     var seed = seedOf(acct), done = acct.done || {};
     var m = miniCardGeom(w), h = m.h;
@@ -1725,25 +1725,8 @@
     g.shadowColor = "rgba(20,12,4,0.34)"; g.shadowBlur = Math.round(w * 0.07); g.shadowOffsetY = Math.round(w * 0.03);
     g.fillStyle = "#f1e8d2"; sRoundRect(g, x, y, w, h, Math.round(w * 0.05)); g.fill();
     g.restore();
-    // red X/12 in the upper-right (measured first so the name knows its room)
-    var statSize = Math.round(m.headH * 0.40);
-    var statTxt = Object.keys(done).length + "/" + TASKS.length;
-    g.font = statSize + 'px "Permanent Marker","Patrick Hand",cursive';
-    var statW = g.measureText(statTxt).width;
-    g.fillStyle = "#e8543f"; g.textAlign = "right"; g.textBaseline = "alphabetic";
-    g.fillText(statTxt, x + w - m.pad, y + m.pad + statSize);
-    // family name (marker) — auto-shrink to fit the remaining width, no ellipsis
-    var nm = shortName(acct.name || "Family");
-    var nameMax = w - m.pad * 2 - statW - Math.round(m.pad * 0.7);
-    var nameSize = Math.round(m.headH * 0.46);
-    g.font = nameSize + 'px "Permanent Marker","Patrick Hand",cursive';
-    while (nameSize > 9 && g.measureText(nm).width > nameMax) {
-      nameSize -= 1; g.font = nameSize + 'px "Permanent Marker","Patrick Hand",cursive';
-    }
-    g.fillStyle = "#1f3a5f"; g.textAlign = "left";
-    g.fillText(nm, x + m.pad, y + m.pad + nameSize);
     // 3x4 board
-    var bx = x + m.pad, by = y + m.pad + m.headH, r = Math.max(3, Math.round(m.cellW * 0.18));
+    var bx = x + m.pad, by = y + m.pad, r = Math.max(3, Math.round(m.cellW * 0.18));
     TASKS.forEach(function (t, i) {
       var col = i % m.cols, row = Math.floor(i / m.cols);
       var cxp = bx + col * (m.cellW + m.cgap), cyp = by + row * (m.cellH + m.cgap);
@@ -1799,18 +1782,6 @@
     drawTape(g, fcx, frameY, frameW);
     g.restore();
 
-    // A small wall-style bingo card tucked into the LOWER-LEFT of the photo,
-    // slightly overlapping it, taped on with a strip of clear tape. Drawn after
-    // the polaroid so it sits on top of the photo's corner.
-    if (acct) {
-      var mcW = Math.round(Math.max(170, Math.min(frameW * 0.4, 250)));
-      var mcH = miniCardHeight(mcW);
-      var mcX = Math.max(8, px - Math.round(mcW * 0.06));          // peek a little left
-      // Bottom sits just below the photo's lower edge; clamp inside the canvas.
-      var mcBottom = Math.min(py + photoDrawH + Math.round(mcH * 0.08), H - 24);
-      drawMiniBingoCard(g, mcX, mcBottom - mcH, mcW, acct);
-    }
-
     // Brand + caption column on the right.
     var scx = M + frameW + gap + sidebarW / 2, sMaxW = sidebarW - 16;
     // Measure with the title's own font (loaded before compose) so it wraps
@@ -1824,11 +1795,35 @@
           var y0 = cy - (titleLines.length - 1) * tlh / 2;
           titleLines.forEach(function (ln, i) { g.fillText(ln, cx, y0 + i * tlh); });
         } },
-      { h: 74, draw: function (cx, cy) { g.font = '58px "Permanent Marker","Patrick Hand",cursive'; g.fillStyle = "#1f3a5f"; g.textAlign = "center"; g.fillText(familyName, cx, cy); } },
-      { h: 52, draw: function (cx, cy) { g.font = '800 34px "Nunito",system-ui,sans-serif'; g.fillStyle = "#e8543f"; g.textAlign = "center"; g.fillText("✓ " + doneCount + " of " + TASKS.length + " complete", cx, cy); } },
-      { h: 46, draw: function (cx, cy) { g.font = '30px "Permanent Marker","Patrick Hand",cursive'; g.fillStyle = "#8a7a5c"; g.textAlign = "center"; g.fillText(formatTs(ts), cx, cy); } },
-      { h: 60, draw: function (cx, cy) { drawMottoAt(g, cx, cy, sMaxW); } }
+      { h: 74, draw: function (cx, cy) { g.font = '58px "Permanent Marker","Patrick Hand",cursive'; g.fillStyle = "#1f3a5f"; g.textAlign = "center"; g.fillText(familyName, cx, cy); } }
     ]);
+    // A small wall-style bingo board (no name/stat — those are already the
+    // caption above) tucked under the family name, held on with clear tape.
+    if (acct) {
+      var mcW = 214, mcH = miniCardHeight(mcW);
+      bands.push({ h: mcH + 24, draw: function (cx, cy) {
+        drawMiniBingoCard(g, Math.round(cx - mcW / 2), Math.round(cy - mcH / 2), mcW, acct);
+      } });
+    }
+    // Progress + date share one row as two columns (they sit below the mini
+    // card, before the motto), so the card has room without crowding.
+    bands.push({ h: 56, draw: function (cx, cy) {
+      var colW = sidebarW / 2, inner = colW - 26;
+      var lcx = cx - colW / 2, rcx = cx + colW / 2;
+      g.textAlign = "center";
+      var pTxt = "✓ " + doneCount + " of " + TASKS.length + " complete";
+      var ps = fitSize(g, pTxt, function (z) { return '800 ' + z + 'px "Nunito",system-ui,sans-serif'; }, inner, 28);
+      g.font = '800 ' + ps + 'px "Nunito",system-ui,sans-serif'; g.fillStyle = "#e8543f";
+      g.fillText(pTxt, lcx, cy);
+      var dTxt = formatTs(ts);
+      var ds = fitSize(g, dTxt, function (z) { return z + 'px "Permanent Marker","Patrick Hand",cursive'; }, inner, 28);
+      g.font = ds + 'px "Permanent Marker","Patrick Hand",cursive'; g.fillStyle = "#8a7a5c";
+      g.fillText(dTxt, rcx, cy);
+      // faint divider between the two columns
+      g.strokeStyle = "rgba(31,58,95,.18)"; g.lineWidth = 2;
+      g.beginPath(); g.moveTo(cx, cy - 16); g.lineTo(cx, cy + 16); g.stroke();
+    } });
+    bands.push({ h: 60, draw: function (cx, cy) { drawMottoAt(g, cx, cy, sMaxW); } });
     drawBands(g, scx, contentTop, availH, bands);
     return cv;
   }

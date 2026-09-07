@@ -188,6 +188,7 @@ older version by URL slug**:
 | `/v152`  | Version 152 snapshot (card task labels no longer get clipped — the auto-fit now re-runs whenever the board resizes, the hand-drawn font finishes loading, or a read-only card is viewed, instead of relying on one fragile first pass) |
 | `/v153`  | Version 153 snapshot (card task labels now stay a fixed, readable size — instead of shrinking to cram onto one screen, the cells grow to fit their text and the card scrolls when it needs more room) |
 | `/v154`  | Version 154 snapshot (taller Add Photo buttons for easier tapping; the task's share image now carries a small wall-style bingo card taped into the photo's lower-left corner; balanced cell text padding; and titles are capped at 3 lines — a longer title shrinks rather than wrapping to a fourth line) |
+| `/v155`  | Version 155 snapshot (task share image: the mini bingo card moved to the right column under the family name — board only, no name/stat since those are already shown — and the progress + date sit beside each other in two columns beneath it) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
