@@ -220,10 +220,17 @@
   // Shrink each title's font just enough that its FULL text fits its cell —
   // no ellipsis, no cropping — on any screen size.
   function fitTitles() {
-    if (!current) return;
+    // Only fit when the board is actually on-screen. A hidden board (we're on
+    // the Wall) reports clientHeight 0, which would bloat every title's font to
+    // the max and leave that inline size stuck for the next view. This runs for
+    // ANY visible board — including a not-signed-in visitor's read-only view.
+    if (!el.board || el.board.hidden) return;
     var titles = el.grid.querySelectorAll(".cell:not(.done) .cell-title");
     for (var i = 0; i < titles.length; i++) {
       var t = titles[i];
+      // Skip a cell that hasn't been laid out yet (0-height box) — measuring it
+      // would corrupt the fit. The ResizeObserver re-fits once it has a size.
+      if (t.clientHeight < 2) continue;
       t.style.fontSize = "";                 // reset to the CSS-driven size
       var size = parseFloat(getComputedStyle(t).fontSize) || 12;
       var min = 7, max = 30, guard = 0;
@@ -269,7 +276,15 @@
   window.addEventListener("resize", scheduleFit);
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(scheduleFit).catch(function () {});
+    // `ready` resolves only for fonts already in flight; the hand-drawn title
+    // face is often requested later (when the board first paints) and swaps in
+    // afterwards, reflowing titles wider with no grid-size change — which the
+    // ResizeObserver can't see. Re-fit every time a font batch finishes.
+    if (document.fonts.addEventListener) {
+      document.fonts.addEventListener("loadingdone", scheduleFit);
+    }
   }
+  // (A ResizeObserver on the grid is wired up after `el` is built — see below.)
 
   // Build the frayed-shape mask canvas (opaque white blob on transparent bg).
   // Shared by applyWornEdge (as a CSS mask) and the card screenshot (to clip
@@ -722,6 +737,15 @@
     modalRemove: document.getElementById("modalRemove"),
     toast: document.getElementById("toast")
   };
+
+  // A single title-fit pass is fragile: on a real device the board can still be
+  // settling (view transition, late web-font swap, mobile URL-bar collapse)
+  // when the first pass runs, leaving long titles measured against the wrong
+  // box and clipped forever. Re-fit whenever the grid's own size actually
+  // changes, so the sizing self-corrects instead of relying on one lucky guess.
+  if (typeof ResizeObserver === "function" && el.grid) {
+    try { new ResizeObserver(scheduleFit).observe(el.grid); } catch (e) {}
+  }
 
   var current = null;      // current account object
   var boardAcct = null;    // the account whose board is on screen (may be someone else's)
