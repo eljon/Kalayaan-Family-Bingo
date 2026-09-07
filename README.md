@@ -191,6 +191,7 @@ older version by URL slug**:
 | `/v155`  | Version 155 snapshot (task share image: the mini bingo card moved to the right column under the family name — board only, no name/stat since those are already shown — and the progress + date sit beside each other in two columns beneath it) |
 | `/v156`  | Version 156 snapshot (ward-admin login — sign in as `admin` — that can delete any family card from the Wall or any completed task from inside a card; a red 🗑 badge appears on each, and the bottom button toggles admin mode) |
 | `/v157`  | Version 157 snapshot (fixes the "broken buttons" — the hand-drawn pill outline is now generated at each button's real pixel size instead of a fixed shape stretched to fit, which iOS Safari rasterised into disconnected blobs; a ResizeObserver repaints on any size/label change) |
+| `/v158`  | Version 158 snapshot (task share image redesign: FAMILY BINGO on one line, the task name on a taped paper note below the family name, and a two-column row — the mini bingo card on the left, completion time + progress on the right) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap

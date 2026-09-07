@@ -1688,16 +1688,15 @@
     bands.forEach(function (b) { if (b.draw) b.draw(cx, y + b.h / 2); y += b.h; });
     g.textBaseline = prev;
   }
-  // The KALAYAAN WARD / FAMILY / BINGO title as three stacked bands.
+  // The KALAYAAN WARD / FAMILY BINGO title — "FAMILY BINGO" on ONE line.
   function brandTitleBands(g, sMaxW) {
     var kw = "K A L A Y A A N   W A R D";
     var s1 = fitSize(g, kw, function (z) { return '800 ' + z + 'px "Nunito",system-ui,sans-serif'; }, sMaxW, 32);
     var mk = function (z) { return z + 'px "Permanent Marker","Patrick Hand",cursive'; };
-    var s2 = Math.min(fitSize(g, "FAMILY", mk, sMaxW, 108), fitSize(g, "BINGO", mk, sMaxW, 108));
+    var s2 = fitSize(g, "FAMILY BINGO", mk, sMaxW, 92);
     return [
       { h: s1 + 26, draw: function (cx, cy) { g.font = '800 ' + s1 + 'px "Nunito",system-ui,sans-serif'; g.fillStyle = "#1f3a5f"; g.textAlign = "center"; g.fillText(kw, cx, cy); } },
-      { h: s2 + 12, draw: function (cx, cy) { g.font = mk(s2); sRainbow(g, "FAMILY", cx, cy, SHARE_COLORS); } },
-      { h: s2 + 12, draw: function (cx, cy) { g.font = mk(s2); sRainbow(g, "BINGO", cx, cy, SHARE_COLORS); } },
+      { h: s2 + 16, draw: function (cx, cy) { g.font = mk(s2); sRainbow(g, "FAMILY BINGO", cx, cy, SHARE_COLORS); } },
       { h: 46, draw: function (cx, cy) { g.font = '30px "Permanent Marker","Patrick Hand",cursive'; g.fillStyle = "#e8543f"; g.textAlign = "center"; g.fillText("♥ ♥ ♥", cx, cy); } }
     ];
   }
@@ -1830,6 +1829,54 @@
     drawClearTape(g, cx, y + Math.round(h * 0.02), w * 0.4, tilt);
   }
 
+  // Wrap `text` to as many lines as it needs within `maxW` (no ellipsis).
+  function wrapAll(g, text, maxW) {
+    var words = String(text).split(" "), line = "", lines = [], i;
+    for (i = 0; i < words.length; i++) {
+      var t = line ? line + " " + words[i] : words[i];
+      if (g.measureText(t).width > maxW && line) { lines.push(line); line = words[i]; }
+      else line = t;
+    }
+    if (line) lines.push(line);
+    return lines;
+  }
+  // Measure the torn-paper task note: pick a marker size so the title fits in
+  // at most 2 lines within the paper, and return the note's size + wrapped text.
+  function taskPaperMetrics(g, maxW, text) {
+    var padX = 36, padY = 26, innerMax = maxW - 2 * padX;
+    var mk = function (z) { return z + 'px "Permanent Marker","Patrick Hand",cursive'; };
+    var size = 40, lines;
+    for (; size > 20; size -= 2) { g.font = mk(size); lines = wrapAll(g, text, innerMax); if (lines.length <= 2) break; }
+    g.font = mk(size); lines = wrapAll(g, text, innerMax);
+    // Shrink the paper to hug the text (so short titles aren't a wide banner).
+    var longest = 0; lines.forEach(function (l) { longest = Math.max(longest, g.measureText(l).width); });
+    var w = Math.min(maxW, Math.max(230, Math.round(longest + 2 * padX)));
+    var lh = Math.round(size * 1.16);
+    return { w: w, size: size, lines: lines, lh: lh, h: padY * 2 + lines.length * lh };
+  }
+  // Draw that note (taped on, slight tilt) with its top edge at `topY`.
+  function drawTaskPaper(g, cx, topY, m, seed) {
+    var w = m.w, h = m.h;
+    var mk = function (z) { return z + 'px "Permanent Marker","Patrick Hand",cursive'; };
+    var tilt = (mkRng(String(seed) + "|notepaper")() * 2 - 1) * 2.4 * Math.PI / 180;
+    var ccx = cx, ccy = topY + h / 2;
+    g.save();
+    g.translate(ccx, ccy); g.rotate(tilt); g.translate(-ccx, -ccy);
+    g.save();
+    g.shadowColor = "rgba(20,12,4,0.28)"; g.shadowBlur = 22; g.shadowOffsetY = 10;
+    g.fillStyle = "#f3ecd8"; sRoundRect(g, cx - w / 2, topY, w, h, 8); g.fill();
+    g.restore();
+    g.strokeStyle = "rgba(120,96,52,.10)"; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(cx - w / 2 + 8, topY + 6); g.lineTo(cx + w / 2 - 8, topY + 6); g.stroke();
+    g.font = mk(m.size); g.fillStyle = "#1f3a5f"; g.textAlign = "center";
+    var y0 = ccy - (m.lines.length - 1) * m.lh / 2;
+    var pv = g.textBaseline; g.textBaseline = "middle";
+    m.lines.forEach(function (ln, i) { g.fillText(ln, cx, y0 + i * m.lh); });
+    g.textBaseline = pv;
+    g.restore();
+    drawClearTape(g, cx, topY + 2, w * 0.3, tilt);
+  }
+
   // Featured single-photo card, laid out LANDSCAPE / near-square for a mobile
   // social feed: the photo (CONTAINED, never cropped) sits in a tilted polaroid
   // on the left; a festive brand column (KALAYAAN WARD / FAMILY BINGO, the
@@ -1869,44 +1916,49 @@
 
     // Brand + caption column on the right.
     var scx = M + frameW + gap + sidebarW / 2, sMaxW = sidebarW - 16;
-    // Measure with the title's own font (loaded before compose) so it wraps
-    // correctly instead of overflowing the column.
-    g.font = '40px "Permanent Marker","Patrick Hand",cursive';
-    var titleLines = wrapLines(g, taskTitle, sMaxW, 3);
-    var tlh = 48;
-    var bands = brandTitleBands(g, sMaxW).concat([
-      { h: titleLines.length * tlh + 8, draw: function (cx, cy) {
-          g.font = '40px "Permanent Marker","Patrick Hand",cursive'; g.fillStyle = "#1f3a5f"; g.textAlign = "center";
-          var y0 = cy - (titleLines.length - 1) * tlh / 2;
-          titleLines.forEach(function (ln, i) { g.fillText(ln, cx, y0 + i * tlh); });
-        } },
-      { h: 74, draw: function (cx, cy) { g.font = '58px "Permanent Marker","Patrick Hand",cursive'; g.fillStyle = "#1f3a5f"; g.textAlign = "center"; g.fillText(familyName, cx, cy); } }
-    ]);
-    // A small wall-style bingo board (no name/stat — those are already the
-    // caption above) tucked under the family name, held on with clear tape.
-    if (acct) {
-      var mcW = 214, mcH = miniCardHeight(mcW);
-      bands.push({ h: mcH + 24, draw: function (cx, cy) {
-        drawMiniBingoCard(g, Math.round(cx - mcW / 2), Math.round(cy - mcH / 2), mcW, acct);
-      } });
-    }
-    // Progress + date share one row as two columns (they sit below the mini
-    // card, before the motto), so the card has room without crowding.
-    bands.push({ h: 56, draw: function (cx, cy) {
-      var colW = sidebarW / 2, inner = colW - 26;
-      var lcx = cx - colW / 2, rcx = cx + colW / 2;
-      g.textAlign = "center";
-      var pTxt = "✓ " + doneCount + " of " + TASKS.length + " complete";
-      var ps = fitSize(g, pTxt, function (z) { return '800 ' + z + 'px "Nunito",system-ui,sans-serif'; }, inner, 28);
-      g.font = '800 ' + ps + 'px "Nunito",system-ui,sans-serif'; g.fillStyle = "#e8543f";
-      g.fillText(pTxt, lcx, cy);
+    var bands = brandTitleBands(g, sMaxW);
+    // Family name (auto-shrunk so it never overflows the column).
+    bands.push({ h: 76, draw: function (cx, cy) {
+      var mk = function (z) { return z + 'px "Permanent Marker","Patrick Hand",cursive'; };
+      var fs = fitSize(g, familyName, mk, sMaxW, 58);
+      g.font = mk(fs); g.fillStyle = "#1f3a5f"; g.textAlign = "center"; g.fillText(familyName, cx, cy);
+    } });
+    // The task name on a torn-paper note, directly BELOW the family name.
+    var noteM = taskPaperMetrics(g, sMaxW, taskTitle);
+    bands.push({ h: noteM.h + 22, draw: function (cx, cy) {
+      drawTaskPaper(g, cx, Math.round(cy - noteM.h / 2), noteM, seedOf(acct) + "|" + taskTitle);
+    } });
+    // Two columns: the mini bingo card on the LEFT, completion time + progress
+    // stacked on the RIGHT.
+    var mcW = 196, mcH = miniCardHeight(mcW);
+    bands.push({ h: mcH, draw: function (cx, cy) {
+      var leftPad = 6, colGap = 22;
+      var cardX = cx - sidebarW / 2 + leftPad;
+      if (acct) drawMiniBingoCard(g, Math.round(cardX), Math.round(cy - mcH / 2), mcW, acct);
+      // right region: everything to the right of the card
+      var rX = cardX + mcW + colGap, rW = (cx + sidebarW / 2) - rX - 4, rcx = rX + rW / 2;
+      var mk = function (z) { return z + 'px "Permanent Marker","Patrick Hand",cursive'; };
+      var lab = function (z) { return '800 ' + z + 'px "Nunito",system-ui,sans-serif'; };
       var dTxt = formatTs(ts);
-      var ds = fitSize(g, dTxt, function (z) { return z + 'px "Permanent Marker","Patrick Hand",cursive'; }, inner, 28);
-      g.font = ds + 'px "Permanent Marker","Patrick Hand",cursive'; g.fillStyle = "#8a7a5c";
-      g.fillText(dTxt, rcx, cy);
-      // faint divider between the two columns
-      g.strokeStyle = "rgba(31,58,95,.18)"; g.lineWidth = 2;
-      g.beginPath(); g.moveTo(cx, cy - 16); g.lineTo(cx, cy + 16); g.stroke();
+      var dS = fitSize(g, dTxt, mk, rW - 6, 30);
+      var pTxt = "✓ " + doneCount + " / " + TASKS.length;
+      var pS = fitSize(g, pTxt, lab, rW - 6, 34);
+      // Two labelled blocks (time then progress), vertically centred as a group.
+      var blockGap = 26, labH = 20;
+      var timeH = labH + dS, progH = labH + pS;
+      var totalH = timeH + blockGap + progH;
+      var y = cy - totalH / 2;
+      var pv = g.textBaseline; g.textBaseline = "alphabetic"; g.textAlign = "center";
+      // COMPLETED
+      g.font = '800 13px "Nunito",system-ui,sans-serif'; g.fillStyle = "#9b8f78";
+      g.fillText("COMPLETED", rcx, y + 13);
+      g.font = mk(dS); g.fillStyle = "#1f3a5f"; g.fillText(dTxt, rcx, y + labH + dS - 4);
+      // PROGRESS
+      y += timeH + blockGap;
+      g.font = '800 13px "Nunito",system-ui,sans-serif'; g.fillStyle = "#9b8f78";
+      g.fillText("PROGRESS", rcx, y + 13);
+      g.font = lab(pS); g.fillStyle = "#e8543f"; g.fillText(pTxt, rcx, y + labH + pS - 4);
+      g.textBaseline = pv;
     } });
     bands.push({ h: 60, draw: function (cx, cy) { drawMottoAt(g, cx, cy, sMaxW); } });
     drawBands(g, scx, contentTop, availH, bands);
