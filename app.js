@@ -217,11 +217,31 @@
   /* Worn cardboard edge — drawn on a canvas so it is subtle and unique */
   /* on every page load, and reliably rendered as a mask on mobile.     */
   /* ------------------------------------------------------------------ */
-  // Board titles used to be auto-shrunk to fit a fixed cell, but that made long
-  // titles unreadably small. They now render at a fixed, readable size and the
-  // cells grow to their content — the board scrolls (see the scrollable board
-  // layout in CSS) rather than the text shrinking away. Nothing to fit in JS.
-  function fitTitles() {}
+  // Board titles render at a fixed, readable size and the cells grow to their
+  // content (the board scrolls) — no shrink-to-fit. The ONE exception: a title
+  // is never allowed to wrap to 4+ lines. If it would, shrink its font just
+  // enough to bring it back to at most 3 lines (down to a sensible floor).
+  var MAX_TITLE_LINES = 3;
+  function fitTitles() {
+    if (!el.board || el.board.hidden) return;
+    var titles = el.grid.querySelectorAll(".cell:not(.done) .cell-title");
+    for (var i = 0; i < titles.length; i++) {
+      var t = titles[i];
+      t.style.fontSize = "";                 // reset to the CSS-driven size
+      if (t.clientHeight < 2) continue;      // not laid out yet
+      var size = parseFloat(getComputedStyle(t).fontSize) || 14;
+      var min = 8, guard = 0;
+      // lines = title's rendered height / one line's height
+      while (size > min && guard < 40 &&
+             lineCount(t) > MAX_TITLE_LINES) {
+        size -= 0.5; t.style.fontSize = size + "px"; guard++;
+      }
+    }
+  }
+  function lineCount(t) {
+    var lh = parseFloat(getComputedStyle(t).lineHeight) || 1;
+    return Math.round(t.scrollHeight / lh);
+  }
   // Shrink each Wall card's family name until it fits its (single-line) name box
   // — no cropping — however long the name is.
   function fitWardNames() {
@@ -1640,11 +1660,113 @@
     g.restore();
   }
 
+  /* ---- Small wall-style bingo card (drawn on canvas for the share image) --- */
+  // Geometry shared by the height calc and the drawing, so the card can be
+  // bottom-anchored over the photo.
+  function miniCardGeom(w) {
+    var pad = Math.round(w * 0.07);
+    var cgap = Math.round(w * 0.035);
+    var cols = 3, rows = 4;
+    var cellW = (w - pad * 2 - cgap * (cols - 1)) / cols;
+    var cellH = cellW * 1.12;
+    var headH = Math.round(w * 0.26);           // name + stat band
+    var h = Math.round(pad + headH + rows * cellH + (rows - 1) * cgap + pad);
+    return { pad: pad, cgap: cgap, cols: cols, rows: rows,
+             cellW: cellW, cellH: cellH, headH: headH, h: h };
+  }
+  function miniCardHeight(w) { return miniCardGeom(w).h; }
+
+  function hexA(hex, a) {
+    hex = String(hex).replace("#", "");
+    var r = parseInt(hex.substr(0, 2), 16), gg = parseInt(hex.substr(2, 2), 16),
+        b = parseInt(hex.substr(4, 2), 16);
+    return "rgba(" + r + "," + gg + "," + b + "," + a + ")";
+  }
+  // A bold hand-placed check inside a cell rect.
+  function drawMiniCheck(g, x, y, w, h, color, lw) {
+    g.save();
+    g.strokeStyle = color; g.lineWidth = lw; g.lineCap = "round"; g.lineJoin = "round";
+    g.beginPath();
+    g.moveTo(x + w * 0.24, y + h * 0.52);
+    g.lineTo(x + w * 0.42, y + h * 0.70);
+    g.lineTo(x + w * 0.78, y + h * 0.30);
+    g.stroke();
+    g.restore();
+  }
+  // Translucent "clear" tape (no colour) — lets the photo show through.
+  function drawClearTape(g, cx, cy, len, baseRot) {
+    var thick = Math.round(len * 0.32);
+    var rot = baseRot + (Math.random() * 2 - 1) * 0.12;
+    var edge = Math.max(1.4, len * 0.02);
+    g.save();
+    g.translate(cx, cy); g.rotate(rot);
+    var x = -len / 2, y = -thick / 2;
+    g.save();
+    g.shadowColor = "rgba(0,0,0,0.16)"; g.shadowBlur = thick * 0.45; g.shadowOffsetY = thick * 0.12;
+    g.fillStyle = "rgba(248,248,246,0.34)"; sRoundRect(g, x, y, len, thick, 3); g.fill();
+    g.restore();
+    g.fillStyle = "rgba(255,255,255,0.30)";                 // bright cut edges
+    g.fillRect(x, y, edge, thick); g.fillRect(x + len - edge, y, edge, thick);
+    g.strokeStyle = "rgba(255,255,255,0.45)"; g.lineWidth = 1;    // thin glossy outline
+    sRoundRect(g, x, y, len, thick, 3); g.stroke();
+    g.restore();
+  }
+  // The wall card, in miniature: frayed-ish paper, marker family name, red X/12,
+  // and a 3x4 board (done = accent fill + white check; todo = faded outline).
+  function drawMiniBingoCard(g, x, y, w, acct) {
+    var seed = seedOf(acct), done = acct.done || {};
+    var m = miniCardGeom(w), h = m.h;
+    var cx = x + w / 2, cy = y + h / 2;
+    var tilt = (mkRng(String(seed) + "|minicard")() * 2 - 1) * 4 * Math.PI / 180;
+    g.save();
+    g.translate(cx, cy); g.rotate(tilt); g.translate(-cx, -cy);
+    // paper + soft shadow
+    g.save();
+    g.shadowColor = "rgba(20,12,4,0.34)"; g.shadowBlur = Math.round(w * 0.07); g.shadowOffsetY = Math.round(w * 0.03);
+    g.fillStyle = "#f1e8d2"; sRoundRect(g, x, y, w, h, Math.round(w * 0.05)); g.fill();
+    g.restore();
+    // red X/12 in the upper-right (measured first so the name knows its room)
+    var statSize = Math.round(m.headH * 0.40);
+    var statTxt = Object.keys(done).length + "/" + TASKS.length;
+    g.font = statSize + 'px "Permanent Marker","Patrick Hand",cursive';
+    var statW = g.measureText(statTxt).width;
+    g.fillStyle = "#e8543f"; g.textAlign = "right"; g.textBaseline = "alphabetic";
+    g.fillText(statTxt, x + w - m.pad, y + m.pad + statSize);
+    // family name (marker) — auto-shrink to fit the remaining width, no ellipsis
+    var nm = shortName(acct.name || "Family");
+    var nameMax = w - m.pad * 2 - statW - Math.round(m.pad * 0.7);
+    var nameSize = Math.round(m.headH * 0.46);
+    g.font = nameSize + 'px "Permanent Marker","Patrick Hand",cursive';
+    while (nameSize > 9 && g.measureText(nm).width > nameMax) {
+      nameSize -= 1; g.font = nameSize + 'px "Permanent Marker","Patrick Hand",cursive';
+    }
+    g.fillStyle = "#1f3a5f"; g.textAlign = "left";
+    g.fillText(nm, x + m.pad, y + m.pad + nameSize);
+    // 3x4 board
+    var bx = x + m.pad, by = y + m.pad + m.headH, r = Math.max(3, Math.round(m.cellW * 0.18));
+    TASKS.forEach(function (t, i) {
+      var col = i % m.cols, row = Math.floor(i / m.cols);
+      var cxp = bx + col * (m.cellW + m.cgap), cyp = by + row * (m.cellH + m.cgap);
+      var accent = ACCENTS[t.accent] || "#1f3a5f";
+      if (done[t.id]) {
+        g.fillStyle = accent; sRoundRect(g, cxp, cyp, m.cellW, m.cellH, r); g.fill();
+        drawMiniCheck(g, cxp, cyp, m.cellW, m.cellH, "#ffffff", Math.max(2, m.cellW * 0.11));
+      } else {
+        g.fillStyle = "#efe6d0"; sRoundRect(g, cxp, cyp, m.cellW, m.cellH, r); g.fill();
+        g.lineWidth = Math.max(1.4, m.cellW * 0.05); g.strokeStyle = hexA(accent, 0.4);
+        sRoundRect(g, cxp, cyp, m.cellW, m.cellH, r); g.stroke();
+      }
+    });
+    g.restore();
+    // clear tape across the top edge, following the card's tilt
+    drawClearTape(g, cx, y + Math.round(h * 0.02), w * 0.4, tilt);
+  }
+
   // Featured single-photo card, laid out LANDSCAPE / near-square for a mobile
   // social feed: the photo (CONTAINED, never cropped) sits in a tilted polaroid
   // on the left; a festive brand column (KALAYAAN WARD / FAMILY BINGO, the
   // activity, family, progress, date, motto) runs down the right.
-  function composeFeaturedImage(photoImg, taskTitle, familyName, doneCount, ts) {
+  function composeFeaturedImage(photoImg, taskTitle, familyName, doneCount, ts, acct) {
     var H = 1180, M = 76, contentTop = 116, bottomM = 76, gap = 56;
     var availH = H - contentTop - bottomM;
     var a = (photoImg.width && photoImg.height) ? photoImg.width / photoImg.height : 1;
@@ -1676,6 +1798,18 @@
     g.drawImage(photoImg, px, py, photoDrawW, photoDrawH); g.restore();
     drawTape(g, fcx, frameY, frameW);
     g.restore();
+
+    // A small wall-style bingo card tucked into the LOWER-LEFT of the photo,
+    // slightly overlapping it, taped on with a strip of clear tape. Drawn after
+    // the polaroid so it sits on top of the photo's corner.
+    if (acct) {
+      var mcW = Math.round(Math.max(170, Math.min(frameW * 0.4, 250)));
+      var mcH = miniCardHeight(mcW);
+      var mcX = Math.max(8, px - Math.round(mcW * 0.06));          // peek a little left
+      // Bottom sits just below the photo's lower edge; clamp inside the canvas.
+      var mcBottom = Math.min(py + photoDrawH + Math.round(mcH * 0.08), H - 24);
+      drawMiniBingoCard(g, mcX, mcBottom - mcH, mcW, acct);
+    }
 
     // Brand + caption column on the right.
     var scx = M + frameW + gap + sidebarW / 2, sMaxW = sidebarW - 16;
@@ -1839,7 +1973,7 @@
     Promise.all([srcP, ready]).then(function (r) {
       var src = r[0]; if (!src) return;
       return loadImage(src).then(function (img) {
-        showShareCanvas(composeFeaturedImage(img, task.title, familyName, doneCount, ts));
+        showShareCanvas(composeFeaturedImage(img, task.title, familyName, doneCount, ts, acct));
         if (blob) URL.revokeObjectURL(src);
       });
     }).catch(function () {});

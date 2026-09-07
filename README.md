@@ -187,6 +187,7 @@ older version by URL slug**:
 | `/v151`  | Version 151 snapshot (the wall intro no longer shrinks then grows the UI — the corkboard clips its own overflow during the fly-in so the document never scrolls and the layout stays fixed) |
 | `/v152`  | Version 152 snapshot (card task labels no longer get clipped — the auto-fit now re-runs whenever the board resizes, the hand-drawn font finishes loading, or a read-only card is viewed, instead of relying on one fragile first pass) |
 | `/v153`  | Version 153 snapshot (card task labels now stay a fixed, readable size — instead of shrinking to cram onto one screen, the cells grow to fit their text and the card scrolls when it needs more room) |
+| `/v154`  | Version 154 snapshot (taller Add Photo buttons for easier tapping; the task's share image now carries a small wall-style bingo card taped into the photo's lower-left corner; balanced cell text padding; and titles are capped at 3 lines — a longer title shrinks rather than wrapping to a fourth line) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap

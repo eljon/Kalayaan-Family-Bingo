@@ -891,8 +891,9 @@ body.board-active .card-motto {
 body.board-active .cell {
   min-height: 0;
   justify-content: flex-start;
-  /* roomier left/right padding so titles never touch the hand-drawn border */
-  padding: clamp(6px, 1.5vw, 12px) clamp(12px, 3.2vw, 20px) clamp(6px, 1.3vw, 11px);
+  /* Balanced padding — enough that titles don't touch the hand-drawn border,
+     but not so wide the text is squeezed into extra lines. */
+  padding: clamp(8px, 2vw, 12px) clamp(10px, 2.7vw, 15px) clamp(8px, 1.8vw, 12px);
   gap: clamp(3px, 0.9vw, 7px);
   border-width: 2px;
   overflow: hidden;
@@ -1005,7 +1006,8 @@ body.board-active .cell-cam {
   flex: 0 0 auto;
   margin-top: auto;       /* sit at the bottom; title fills above it */
   gap: clamp(3px, 0.9vw, 5px);
-  padding: clamp(5px, 1.5vw, 9px) clamp(9px, 2.6vw, 15px);
+  /* taller tap target for mobile */
+  padding: clamp(9px, 2.4vw, 13px) clamp(10px, 2.8vw, 16px);
 }
 body.board-active .cell-cam .cam-ic {
   width: clamp(14px, 3.8vw, 19px);
