@@ -743,7 +743,13 @@ body.board-active .switchBtn, body.board-active #switchBtn { padding: 7px 14px; 
 body.board-active .app-main {
   flex: 1;
   min-height: 0;
-  display: flex;
+  display: block;
+  /* Scroll when the card needs more room than one screen, so the titles never
+     have to shrink to an unreadable size. The card fills the viewport on tall
+     screens and only grows into this scroll area when its content is taller. */
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
   /* keep the card clear of the very bottom of the screen (+ safe area) */
   padding: 6px 12px calc(env(safe-area-inset-bottom, 0px) + 22px);
   max-width: 720px;
@@ -840,19 +846,21 @@ body.board-active .card-name,
 body.board-active .card-stat { font-size: clamp(24px, 8vw, 46px); }
 
 body.board-active .card-frame {
-  flex: 1;
-  min-height: 0;
+  /* Fill the viewport as a minimum, then grow with the card's content so
+     .app-main scrolls (rather than the flex chain capping the height and
+     letting the taller grid just spill/clip). */
+  min-height: 100%;
   width: 100%;
   margin: 0 auto;
   display: flex;
+  flex-direction: column;
 }
 body.board-active .bingo-card {
-  flex: 1;
-  min-height: 0;
+  flex: 1 0 auto;          /* stretch to fill, but never shrink below content */
   width: 100%;
   display: flex;
   flex-direction: column;
-  /* roomy margins on all sides (titles auto-fit, so more padding is fine) */
+  /* roomy margins on all sides */
   padding: clamp(22px, 5vw, 34px) clamp(22px, 5vw, 34px);
 }
 body.board-active .card-banner {
@@ -863,10 +871,14 @@ body.board-active .card-banner {
 }
 body.board-active .card-sprig { font-size: clamp(16px, 4vw, 22px); }
 body.board-active .grid {
-  flex: 1;
-  min-height: 0;
+  /* Content-sized (not stretched to the viewport) so the rows can grow to fit
+     their text at the fixed title size and the card scrolls in .app-main —
+     instead of a fixed-height grid clipping the titles. */
+  flex: 0 0 auto;
   grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(4, 1fr);
+  /* Rows grow to fit their content, but never drop below a comfortable min. */
+  grid-template-rows: repeat(4, minmax(150px, auto));
+  align-content: start;
   gap: clamp(6px, 1.8vw, 15px);
 }
 body.board-active .card-motto {
@@ -886,24 +898,26 @@ body.board-active .cell {
   overflow: hidden;
 }
 body.board-active .cell-icon {
-  flex: 0 0 44%;          /* bigger sticker area */
+  /* Fixed sticker height (was a % of the row) so a taller, growable cell gives
+     its extra height to the title text rather than an oversized sticker. */
+  flex: 0 0 auto;
   width: 100%;
-  height: auto;
+  height: clamp(48px, 13vw, 64px);
   min-height: 0;
   margin-top: 0;
 }
 /* let the sticker fill the icon area (it carries its own transparent margin) */
 body.board-active .cell-ill { width: 100%; height: 100%; transform: scale(1.12); }
 body.board-active .cell-title {
-  /* fill the large space between icon and camera button; JS auto-shrinks the
-     font only if the FULL title would overflow (no ellipsis). */
-  flex: 1 1 auto;
+  /* Fixed, readable size — the title takes as many lines as it needs and the
+     cell grows to fit it (the board scrolls). Natural (not flex-distributed)
+     height so the box is exactly the text, with no sub-pixel clipping. */
+  flex: 0 0 auto;
   min-height: 0;
   display: block;
   align-self: stretch;
-  font-size: clamp(10px, 3.4vw, 21px);
-  line-height: 1.16;
-  overflow: hidden;
+  font-size: clamp(13px, 3.7vw, 16px);
+  line-height: 1.18;
 }
 /* the FamilySearch helper note lives in the popup, not the tight cell */
 body.board-active .cell-sub { display: none; }

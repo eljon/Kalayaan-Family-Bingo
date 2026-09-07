@@ -186,6 +186,7 @@ older version by URL slug**:
 | `/v150`  | Version 150 snapshot (the "X families" note now flies in AFTER all cards land, and starts hidden so no blank placeholder paper shows) |
 | `/v151`  | Version 151 snapshot (the wall intro no longer shrinks then grows the UI — the corkboard clips its own overflow during the fly-in so the document never scrolls and the layout stays fixed) |
 | `/v152`  | Version 152 snapshot (card task labels no longer get clipped — the auto-fit now re-runs whenever the board resizes, the hand-drawn font finishes loading, or a read-only card is viewed, instead of relying on one fragile first pass) |
+| `/v153`  | Version 153 snapshot (card task labels now stay a fixed, readable size — instead of shrinking to cram onto one screen, the cells grow to fit their text and the card scrolls when it needs more room) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
