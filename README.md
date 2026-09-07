@@ -195,6 +195,7 @@ older version by URL slug**:
 | `/v159`  | Version 159 snapshot (task share image: the task name is now the polaroid's handwritten caption in a thick bottom border, tape kept; the brand column is spread to fill the vertical space instead of packing tight in the middle) |
 | `/v160`  | Version 160 snapshot (buttons meet the 44px Apple-HIG tap-target minimum; a whole-screen celebration — confetti, party-popper cones, stars — plays when a task is shared; the share image's FAMILY BINGO is two lines in the Wall's Baloo font with the hearts removed and progress handwritten; all decorative emoji removed across the app) |
 | `/v161`  | Version 161 snapshot (the whole-card "Share card" image is post-ready again — a near-square 1:1 format; the card is compacted for the capture only so the tall, scroll-to-read on-screen layout no longer stretches the shared image, with the Add Photo buttons hidden and titles sized to never clip) |
+| `/v162`  | Version 162 snapshot (bigger buttons — the Wall/Share-card board bar, the coverflow Share/Replace/Remove, and the task-share Share button, which also sits closer to the photo; the version badge now shows only in admin mode; and the admin can Share any family's card or photo) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap

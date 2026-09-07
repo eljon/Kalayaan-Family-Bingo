@@ -1395,7 +1395,8 @@
     closeWardDetail();
     showView("board");
     document.body.classList.toggle("board-readonly", boardReadOnly);
-    if (el.boardShare) el.boardShare.hidden = boardReadOnly;   // sharing is owner-only
+    // Sharing the whole card is owner-only — plus the admin can share any card.
+    if (el.boardShare) el.boardShare.hidden = boardReadOnly && !isAdmin;
     activeSeed = seedOf(boardAcct);
     el.accountName.textContent = boardAcct.name;
     if (el.cardName) el.cardName.textContent = shortName(boardAcct.name);
@@ -2914,10 +2915,11 @@
     teardownCoverflow();
     cf.tasks = doneTasks;
     cf.current = start;
-    // Replace / Remove / Share are owner-only — only when viewing your own card.
+    // Replace / Remove are owner-only. Share works on your own card, and — for
+    // the ward admin — on ANY family's photo too.
     if (dom.replaceBtn) dom.replaceBtn.style.display = boardReadOnly ? "none" : "";
     if (dom.removeBtn) dom.removeBtn.style.display = boardReadOnly ? "none" : "";
-    if (dom.shareBtn) dom.shareBtn.style.display = boardReadOnly ? "none" : "";
+    if (dom.shareBtn) dom.shareBtn.style.display = (boardReadOnly && !isAdmin) ? "none" : "";
 
     // Render each cell at its EXACT on-board size, then scale the whole thing
     // up uniformly — so every proportion (border, title, photo) matches the
