@@ -159,7 +159,8 @@ body {
   font-size: 15px;
   border: none;
   border-radius: 999px;
-  padding: 11px 20px;
+  padding: 12px 20px;
+  min-height: 44px;                /* Apple HIG minimum tap target */
   cursor: pointer;
   transition: transform 0.08s ease, box-shadow 0.15s ease, background 0.15s ease;
   display: inline-flex;
@@ -544,6 +545,56 @@ body {
   to { transform: translateY(105vh) rotate(720deg); opacity: 0.9; }
 }
 
+/* ---- Full-screen celebration (on completing/sharing a task) ---- */
+.celebrate-overlay {
+  position: fixed; inset: 0; z-index: 130;   /* above the share modal (110) */
+  pointer-events: none; overflow: hidden;
+}
+.cel-cf {                                     /* falling confetti */
+  position: absolute; top: -6vh; width: 11px; height: 15px;
+  will-change: transform, opacity; opacity: 0.96;
+  animation: cel-fall linear forwards;
+}
+.cel-cf.round { border-radius: 50%; }
+.cel-cf.streamer { width: 6px; height: 30px; border-radius: 4px; }
+.cel-cf.star, .cel-pop.star {
+  width: 17px; height: 17px; border-radius: 0;
+  clip-path: polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+}
+@keyframes cel-fall {
+  0%   { transform: translate3d(0, -6vh, 0) rotate(0); }
+  100% { transform: translate3d(var(--drift, 0), 112vh, 0) rotate(var(--spin, 720deg)); opacity: 0.85; }
+}
+.cel-pop {                                    /* party-popper burst particle */
+  position: absolute; width: 10px; height: 10px; border-radius: 2px;
+  will-change: transform, opacity;
+  animation: cel-burst var(--dur, 1.2s) cubic-bezier(.12,.62,.28,1) forwards;
+}
+.cel-pop.round { border-radius: 50%; }
+.cel-pop.streamer { width: 6px; height: 22px; border-radius: 3px; }
+@keyframes cel-burst {
+  0%   { transform: translate3d(0,0,0) rotate(0); opacity: 1; }
+  70%  { opacity: 1; }
+  100% { transform: translate3d(var(--dx,0), var(--dy,0), 0) rotate(var(--rot,360deg)); opacity: 0; }
+}
+.cel-cone {                                   /* the party-popper cone itself */
+  position: absolute; bottom: 1vh; width: 42px; height: 60px;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);  /* opening at top, tip at bottom */
+  background: repeating-linear-gradient(58deg,
+    #e8543f 0 7px, #f4c542 7px 14px, #2fa3a0 14px 21px, #8f6fb0 21px 28px);
+  transform-origin: 50% 100%;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,.22));
+  will-change: transform, opacity;
+  animation: cel-cone 1.5s ease-out forwards;
+}
+@keyframes cel-cone {
+  0%   { transform: scale(0.2) rotate(var(--r, 0deg)); opacity: 0; }
+  16%  { transform: scale(1)   rotate(var(--r, 0deg)); opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: scale(1)   rotate(var(--r, 0deg)); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .celebrate-overlay { display: none; } }
+
 /* Responsive (keep the 4x3 poster layout on phones) */
 @media (max-width: 720px) {
   .account-bar { flex-direction: row; }
@@ -782,7 +833,7 @@ body.board-active .progress-wrap { display: none; }
 }
 .board-back, .board-share {
   display: inline-flex; align-items: center; justify-content: center; gap: 4px;
-  padding: 10px 18px; min-height: 40px;
+  padding: 11px 18px; min-height: 44px;   /* Apple HIG minimum tap target */
   border: 1px solid var(--line); border-radius: 999px;
   font-family: "Nunito", system-ui, sans-serif; font-weight: 800; font-size: 15px;
   cursor: pointer;
@@ -1006,8 +1057,9 @@ body.board-active .cell-cam {
   flex: 0 0 auto;
   margin-top: auto;       /* sit at the bottom; title fills above it */
   gap: clamp(3px, 0.9vw, 5px);
-  /* taller tap target for mobile */
-  padding: clamp(9px, 2.4vw, 13px) clamp(10px, 2.8vw, 16px);
+  /* taller tap target for mobile (Apple HIG minimum) */
+  padding: clamp(10px, 2.4vw, 13px) clamp(10px, 2.8vw, 16px);
+  min-height: 44px;
 }
 body.board-active .cell-cam .cam-ic {
   width: clamp(14px, 3.8vw, 19px);
@@ -1281,9 +1333,9 @@ body.board-active .cell-cam .cam-tx { font-size: clamp(11px, 3vw, 15px); }
 /* A round red trash badge, shared by the Wall card and the board's done cell. */
 .wm-admin-del, .cell-admin-del {
   position: absolute; z-index: 30;
-  width: 30px; height: 30px; padding: 0;
+  width: 40px; height: 40px; padding: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 15px; line-height: 1; cursor: pointer;
+  font-size: 18px; line-height: 1; cursor: pointer;
   border: 2px solid #fff; border-radius: 50%;
   background: #e8543f; color: #fff;
   box-shadow: 0 3px 8px rgba(31,58,95,.32);

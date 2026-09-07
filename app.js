@@ -859,7 +859,7 @@
         var del = document.createElement("button");
         del.className = "card-del"; del.type = "button";
         del.setAttribute("aria-label", "Remove " + a.name + " from this device");
-        del.innerHTML = "🗑";
+        del.textContent = "×";
         del.addEventListener("click", function () {
           var msg = Cloud.enabled
             ? "Remove \"" + a.name + "\" from this device? Your cloud card stays — sign back in with the password to restore it."
@@ -1027,7 +1027,7 @@
       var del = document.createElement("button");
       del.type = "button";
       del.className = "wm-admin-del";
-      del.innerHTML = "🗑";
+      del.textContent = "×";
       del.setAttribute("aria-label", "Delete " + displayName(p.name) + " card");
       del.addEventListener("click", function (e) {
         e.stopPropagation();
@@ -1274,7 +1274,7 @@
       return (a.createdAt || 0) - (b.createdAt || 0);  // stable fallback
     });
     if (el.wardJoin) {
-      el.wardJoin.textContent = isAdmin ? "🔧 Admin mode — tap to exit" : "＋ Join / Sign in";
+      el.wardJoin.textContent = isAdmin ? "Admin mode — tap to exit" : "＋ Join / Sign in";
       // repaint the hand-drawn pill in the admin colour (and at the new width)
       if (el.wardJoin._hd) { el.wardJoin._hd.color = isAdmin ? "#c33f2c" : "#e8543f"; hdPaint(el.wardJoin); }
     }
@@ -1303,7 +1303,7 @@
     }
     if (el.wardCount) {
       el.wardCount.textContent = players.length + (players.length === 1 ? " family" : " families") +
-        (finished ? " · " + finished + " done 🏆" : "");
+        (finished ? " · " + finished + " finished" : "");
     }
     scheduleFit();   // shrink any long family names to fit their name box
     // The one-time fly-in intro is played from boot() once the Wall has settled
@@ -1425,7 +1425,7 @@
     var del = document.createElement("button");
     del.type = "button";
     del.className = "cell-admin-del";
-    del.innerHTML = "🗑";
+    del.textContent = "×";
     del.setAttribute("aria-label", "Delete this completed task");
     del.addEventListener("click", function (e) {
       e.stopPropagation();
@@ -1576,6 +1576,32 @@
     g.drawImage(img, sx, sy, sw, sh, x, y, w, h);
   }
   // Centre a string but colour each glyph from the palette (the app's rainbow title).
+  // "FAMILY" / "BINGO" drawn exactly like the Wall's brand title: Baloo 2,
+  // per-letter colour cycle + jaunty rotation, a white sticker outline and a
+  // soft drop shadow. Letters are centred vertically on `y` (middle baseline).
+  var BRAND_COLORS = ["#e8543f", "#f2a03d", "#6fae4a", "#2fa3a0", "#8f6fb0", "#1f3a5f"];
+  var BRAND_ROT = [-5, 4, -3, 5, -4, 3];
+  function drawBrandWord(g, word, cx, y, size) {
+    g.font = '800 ' + size + 'px "Baloo 2","Nunito",sans-serif';
+    var ls = Math.round(size * 0.03), widths = [], total = 0, i;
+    for (i = 0; i < word.length; i++) { var w = g.measureText(word[i]).width; widths.push(w); total += w + ls; }
+    total -= ls;
+    var x = cx - total / 2;
+    var pa = g.textAlign, pb = g.textBaseline, pj = g.lineJoin;
+    g.textAlign = "left"; g.textBaseline = "middle"; g.lineJoin = "round";
+    for (i = 0; i < word.length; i++) {
+      var ch = word[i], cw = widths[i], lcx = x + cw / 2;
+      g.save();
+      g.translate(lcx, y); g.rotate(BRAND_ROT[i % 6] * Math.PI / 180); g.translate(-lcx, -y);
+      g.shadowColor = "rgba(31,45,70,0.22)"; g.shadowBlur = size * 0.06; g.shadowOffsetY = size * 0.05;
+      g.lineWidth = Math.max(3, size * 0.07); g.strokeStyle = "#fff"; g.strokeText(ch, x, y);
+      g.shadowColor = "transparent"; g.shadowBlur = 0; g.shadowOffsetY = 0;
+      g.fillStyle = BRAND_COLORS[i % 6]; g.fillText(ch, x, y);
+      g.restore();
+      x += cw + ls;
+    }
+    g.textAlign = pa; g.textBaseline = pb; g.lineJoin = pj;
+  }
   function sRainbow(g, text, cx, y, colors) {
     var widths = [], total = 0, i;
     for (i = 0; i < text.length; i++) { var wc = g.measureText(text[i]).width; widths.push(wc); total += wc; }
@@ -1694,16 +1720,20 @@
     bands.forEach(function (b) { if (b.draw) b.draw(cx, y + b.h / 2); y += b.h + gap; });
     g.textBaseline = prev;
   }
-  // The KALAYAAN WARD / FAMILY BINGO title — "FAMILY BINGO" on ONE line.
+  // KALAYAAN WARD over FAMILY / BINGO — the brand exactly as it looks on the
+  // Wall (Baloo 2 sticker letters), stacked on TWO lines. No hearts.
   function brandTitleBands(g, sMaxW) {
     var kw = "K A L A Y A A N   W A R D";
     var s1 = fitSize(g, kw, function (z) { return '800 ' + z + 'px "Nunito",system-ui,sans-serif'; }, sMaxW, 32);
-    var mk = function (z) { return z + 'px "Permanent Marker","Patrick Hand",cursive'; };
-    var s2 = fitSize(g, "FAMILY BINGO", mk, sMaxW, 92);
+    var bf = function (z) { return '800 ' + z + 'px "Baloo 2","Nunito",sans-serif'; };
+    var s2 = Math.min(fitSize(g, "FAMILY", bf, sMaxW, 108), fitSize(g, "BINGO", bf, sMaxW, 108));
+    var lineH = Math.round(s2 * 0.92);
     return [
       { h: s1 + 26, draw: function (cx, cy) { g.font = '800 ' + s1 + 'px "Nunito",system-ui,sans-serif'; g.fillStyle = "#1f3a5f"; g.textAlign = "center"; g.fillText(kw, cx, cy); } },
-      { h: s2 + 16, draw: function (cx, cy) { g.font = mk(s2); sRainbow(g, "FAMILY BINGO", cx, cy, SHARE_COLORS); } },
-      { h: 46, draw: function (cx, cy) { g.font = '30px "Permanent Marker","Patrick Hand",cursive'; g.fillStyle = "#e8543f"; g.textAlign = "center"; g.fillText("♥ ♥ ♥", cx, cy); } }
+      { h: lineH * 2, draw: function (cx, cy) {
+          drawBrandWord(g, "FAMILY", cx, cy - lineH / 2, s2);
+          drawBrandWord(g, "BINGO", cx, cy + lineH / 2, s2);
+        } }
     ];
   }
 
@@ -1924,11 +1954,10 @@
       // right region: everything to the right of the card
       var rX = cardX + mcW + colGap, rW = (cx + sidebarW / 2) - rX - 4, rcx = rX + rW / 2;
       var mk = function (z) { return z + 'px "Permanent Marker","Patrick Hand",cursive'; };
-      var lab = function (z) { return '800 ' + z + 'px "Nunito",system-ui,sans-serif'; };
       var dTxt = formatTs(ts);
       var dS = fitSize(g, dTxt, mk, rW - 6, 30);
       var pTxt = "✓ " + doneCount + " / " + TASKS.length;
-      var pS = fitSize(g, pTxt, lab, rW - 6, 34);
+      var pS = fitSize(g, pTxt, mk, rW - 6, 40);   // handwritten, like the date
       // Two labelled blocks (time then progress), vertically centred as a group.
       var blockGap = 26, labH = 20;
       var timeH = labH + dS, progH = labH + pS;
@@ -1943,7 +1972,7 @@
       y += timeH + blockGap;
       g.font = '800 13px "Nunito",system-ui,sans-serif'; g.fillStyle = "#9b8f78";
       g.fillText("PROGRESS", rcx, y + 13);
-      g.font = lab(pS); g.fillStyle = "#e8543f"; g.fillText(pTxt, rcx, y + labH + pS - 4);
+      g.font = mk(pS); g.fillStyle = "#e8543f"; g.fillText(pTxt, rcx, y + labH + pS - 4);
       g.textBaseline = pv;
     } });
     bands.push({ h: 60, draw: function (cx, cy) { drawMottoAt(g, cx, cy, sMaxW); } });
@@ -2064,7 +2093,7 @@
   }
 
   // Turn a finished canvas into the shared PNG and open the share sheet.
-  function showShareCanvas(canvas) {
+  function showShareCanvas(canvas, party) {
     if (!el.share || !canvas) return;
     canvas.toBlob(function (png) {
       if (!png) return;
@@ -2075,6 +2104,7 @@
       el.shareImg.src = shareBlobUrl;
       el.shareHint.textContent = "";
       el.share.hidden = false;
+      if (party) celebrate();          // whole-screen party when a task is shared
     }, "image/png", 0.92);
   }
 
@@ -2091,7 +2121,7 @@
     Promise.all([srcP, ready]).then(function (r) {
       var src = r[0]; if (!src) return;
       return loadImage(src).then(function (img) {
-        showShareCanvas(composeFeaturedImage(img, task.title, familyName, doneCount, ts, acct));
+        showShareCanvas(composeFeaturedImage(img, task.title, familyName, doneCount, ts, acct), true);
         if (blob) URL.revokeObjectURL(src);
       });
     }).catch(function () {});
@@ -2289,7 +2319,7 @@
     el.modalHint.textContent = done
       ? "Nice work! You can replace the photo or remove it."
       : (task.sub ? task.sub + " " : "") + "Upload a photo of your family doing this activity to mark it complete.";
-    el.modalUploadLabel.textContent = done ? "🔄 Replace photo" : "📷 Upload photo";
+    el.modalUploadLabel.textContent = done ? "Replace photo" : "Upload photo";
     el.modalRemove.hidden = !done;
     el.modalPhotoWrap.hidden = true;
     el.modalPhoto.removeAttribute("src");
@@ -2335,19 +2365,19 @@
       if (activeTaskId === taskId) {
         el.modalPhoto.src = u;
         el.modalPhotoWrap.hidden = false;
-        el.modalUploadLabel.textContent = "🔄 Replace photo";
+        el.modalUploadLabel.textContent = "Replace photo";
         el.modalRemove.hidden = false;
       }
 
       renderBoard();
-      showToast("Activity complete! 🎉");
+      showToast("Activity complete!");
       if (!wasDone) { closeModal(); openShareCard(taskId, blob); }  // feature the photo
 
       if (Object.keys(current.done).length === TASKS.length) {
         setTimeout(confetti, 200);
       }
     }).catch(function () {
-      el.modalUploadLabel.textContent = "📷 Upload photo";
+      el.modalUploadLabel.textContent = "Upload photo";
       showToast("Couldn't save the photo — your browser may be blocking storage (try turning off Private Browsing).");
     });
   }
@@ -2387,7 +2417,7 @@
       if (!current.done[taskId]) current.done[taskId] = Date.now();
       updateAccount(current);
       renderBoard();
-      showToast("Activity complete! 🎉");
+      showToast("Activity complete!");
       if (!wasDone) openShareCard(taskId, blob);   // feature the photo for sharing
       if (Object.keys(current.done).length === TASKS.length) setTimeout(confetti, 200);
     }).catch(function () {
@@ -2948,6 +2978,59 @@
     }
   }
 
+  // A big, whole-screen party: confetti rain + two corner party-poppers that
+  // burst inward + a scatter of festive emoji. Fired when a task's share screen
+  // pops up (see showShareCanvas). Self-cleans; skipped for reduced-motion.
+  var CEL_COLORS = ["#e8543f", "#f2a03d", "#f4c542", "#6fae4a", "#2fa3a0", "#8f6fb0", "#1f3a5f"];
+  function celebrate() {
+    if (prefersReduced()) return;
+    var pick = function () { return CEL_COLORS[Math.floor(Math.random() * CEL_COLORS.length)]; };
+    var shapes = ["", "round", "streamer", "star"];
+    var shape = function () { return shapes[Math.floor(Math.random() * shapes.length)]; };
+    var ov = document.createElement("div");
+    ov.className = "celebrate-overlay";
+    ov.setAttribute("aria-hidden", "true");
+
+    // 1) Confetti (rects, dots, streamers, stars) raining from the top.
+    for (var i = 0; i < 120; i++) {
+      var p = document.createElement("div");
+      p.className = "cel-cf " + shape();
+      p.style.left = (Math.random() * 100) + "vw";
+      p.style.background = pick();
+      p.style.setProperty("--drift", (Math.random() * 160 - 80) + "px");
+      p.style.setProperty("--spin", (Math.random() * 720 + 360) + "deg");
+      p.style.animationDuration = (2.2 + Math.random() * 1.8) + "s";
+      p.style.animationDelay = (Math.random() * 0.9) + "s";
+      ov.appendChild(p);
+    }
+
+    // 2) A party-popper cone in each bottom corner that bursts up and inward.
+    [{ x: 5, base: -60, rot: 34 }, { x: 95, base: -120, rot: -34 }].forEach(function (pp) {
+      var cone = document.createElement("div");
+      cone.className = "cel-cone";
+      if (pp.x < 50) cone.style.left = "2vw"; else cone.style.right = "2vw";
+      cone.style.setProperty("--r", pp.rot + "deg");
+      ov.appendChild(cone);
+      for (var j = 0; j < 46; j++) {
+        var q = document.createElement("div");
+        q.className = "cel-pop " + shape();
+        q.style.left = pp.x + "vw"; q.style.top = "94vh";
+        q.style.background = pick();
+        var ang = (pp.base + (Math.random() * 56 - 28)) * Math.PI / 180;
+        var dist = 200 + Math.random() * 400;
+        q.style.setProperty("--dx", Math.round(Math.cos(ang) * dist) + "px");
+        q.style.setProperty("--dy", Math.round(Math.sin(ang) * dist) + "px");   // up = negative
+        q.style.setProperty("--rot", Math.round(Math.random() * 720 - 360) + "deg");
+        q.style.setProperty("--dur", (0.9 + Math.random() * 0.7) + "s");
+        q.style.animationDelay = (Math.random() * 0.12) + "s";
+        ov.appendChild(q);
+      }
+    });
+
+    document.body.appendChild(ov);
+    setTimeout(function () { ov.remove(); }, 4300);
+  }
+
   /* ------------------------------------------------------------------ */
   /* Login (name + secret code) — cloud when available, else local       */
   /* ------------------------------------------------------------------ */
@@ -3038,7 +3121,7 @@
     if (el.familyPass) el.familyPass.value = "";
     if (el.familyPass2) el.familyPass2.value = "";
     closeJoin();
-    showToast("Admin mode — tap 🗑 to delete a card, or a task inside a card.");
+    showToast("Admin mode — you can now delete any card or task.");
     renderWard();
   }
   function exitAdmin() {
