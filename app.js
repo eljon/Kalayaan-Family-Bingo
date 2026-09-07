@@ -2758,7 +2758,10 @@
   }
 
   function openFullPhoto(taskId) {
-    if (!current) return;
+    // Use the card being VIEWED (boardAcct), not the signed-in user — otherwise
+    // tapping a photo on someone else's card (or as the admin) shows your own.
+    var acct = boardAcct || current;
+    if (!acct) return;
     var dom = buildFullDom();
     if (cfFull.url) { URL.revokeObjectURL(cfFull.url); cfFull.url = null; }
     dom.img.classList.remove("ready");
@@ -2770,7 +2773,7 @@
     setTimeout(function () { cfFull.armed = true; }, 350);
     // rAF so the removed [hidden] paints before we add the enter transition.
     requestAnimationFrame(function () { dom.overlay.classList.add("in"); });
-    getPhotoSrc(current, taskId, []).then(function (src) {
+    getPhotoSrc(acct, taskId, []).then(function (src) {
       if (!src || !cfFull.open) return;
       // revoke only object URLs we minted; leave remote cloud URLs alone
       cfFull.url = (String(src).indexOf("blob:") === 0) ? src : null;
