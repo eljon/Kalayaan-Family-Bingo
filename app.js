@@ -1681,11 +1681,17 @@
   }
   // Render a centred vertical stack of bands ({h, draw(cx, cy)}) inside the
   // region [top, top+availH], vertically centred, using middle text baseline.
-  function drawBands(g, cx, top, availH, bands) {
+  function drawBands(g, cx, top, availH, bands, spread) {
     var total = 0; bands.forEach(function (b) { total += b.h; });
-    var y = top + Math.max(0, (availH - total) / 2);
+    var n = bands.length;
+    // When asked to spread, distribute the leftover vertical space as even gaps
+    // BETWEEN the bands (capped so they breathe without floating far apart) and
+    // centre the whole spread block — instead of packing them tight in the middle.
+    var gap = 0;
+    if (spread && n > 1) gap = Math.min(Math.max(0, (availH - total) / (n - 1)), 72);
+    var y = top + Math.max(0, (availH - (total + gap * (n - 1))) / 2);
     var prev = g.textBaseline; g.textBaseline = "middle";
-    bands.forEach(function (b) { if (b.draw) b.draw(cx, y + b.h / 2); y += b.h; });
+    bands.forEach(function (b) { if (b.draw) b.draw(cx, y + b.h / 2); y += b.h + gap; });
     g.textBaseline = prev;
   }
   // The KALAYAAN WARD / FAMILY BINGO title — "FAMILY BINGO" on ONE line.
@@ -1840,42 +1846,6 @@
     if (line) lines.push(line);
     return lines;
   }
-  // Measure the torn-paper task note: pick a marker size so the title fits in
-  // at most 2 lines within the paper, and return the note's size + wrapped text.
-  function taskPaperMetrics(g, maxW, text) {
-    var padX = 36, padY = 26, innerMax = maxW - 2 * padX;
-    var mk = function (z) { return z + 'px "Permanent Marker","Patrick Hand",cursive'; };
-    var size = 40, lines;
-    for (; size > 20; size -= 2) { g.font = mk(size); lines = wrapAll(g, text, innerMax); if (lines.length <= 2) break; }
-    g.font = mk(size); lines = wrapAll(g, text, innerMax);
-    // Shrink the paper to hug the text (so short titles aren't a wide banner).
-    var longest = 0; lines.forEach(function (l) { longest = Math.max(longest, g.measureText(l).width); });
-    var w = Math.min(maxW, Math.max(230, Math.round(longest + 2 * padX)));
-    var lh = Math.round(size * 1.16);
-    return { w: w, size: size, lines: lines, lh: lh, h: padY * 2 + lines.length * lh };
-  }
-  // Draw that note (taped on, slight tilt) with its top edge at `topY`.
-  function drawTaskPaper(g, cx, topY, m, seed) {
-    var w = m.w, h = m.h;
-    var mk = function (z) { return z + 'px "Permanent Marker","Patrick Hand",cursive'; };
-    var tilt = (mkRng(String(seed) + "|notepaper")() * 2 - 1) * 2.4 * Math.PI / 180;
-    var ccx = cx, ccy = topY + h / 2;
-    g.save();
-    g.translate(ccx, ccy); g.rotate(tilt); g.translate(-ccx, -ccy);
-    g.save();
-    g.shadowColor = "rgba(20,12,4,0.28)"; g.shadowBlur = 22; g.shadowOffsetY = 10;
-    g.fillStyle = "#f3ecd8"; sRoundRect(g, cx - w / 2, topY, w, h, 8); g.fill();
-    g.restore();
-    g.strokeStyle = "rgba(120,96,52,.10)"; g.lineWidth = 1;
-    g.beginPath(); g.moveTo(cx - w / 2 + 8, topY + 6); g.lineTo(cx + w / 2 - 8, topY + 6); g.stroke();
-    g.font = mk(m.size); g.fillStyle = "#1f3a5f"; g.textAlign = "center";
-    var y0 = ccy - (m.lines.length - 1) * m.lh / 2;
-    var pv = g.textBaseline; g.textBaseline = "middle";
-    m.lines.forEach(function (ln, i) { g.fillText(ln, cx, y0 + i * m.lh); });
-    g.textBaseline = pv;
-    g.restore();
-    drawClearTape(g, cx, topY + 2, w * 0.3, tilt);
-  }
 
   // Featured single-photo card, laid out LANDSCAPE / near-square for a mobile
   // social feed: the photo (CONTAINED, never cropped) sits in a tilted polaroid
@@ -1885,17 +1855,31 @@
     var H = 1180, M = 76, contentTop = 116, bottomM = 76, gap = 56;
     var availH = H - contentTop - bottomM;
     var a = (photoImg.width && photoImg.height) ? photoImg.width / photoImg.height : 1;
-    var fp = 22;                                        // polaroid white border
-    var photoDrawH = availH - 2 * fp;
-    var photoDrawW = Math.round(photoDrawH * a);
-    var maxPW = 1120;                                   // cap very wide photos
-    if (photoDrawW > maxPW) { photoDrawW = maxPW; photoDrawH = Math.round(maxPW / a); }
-    var frameW = photoDrawW + 2 * fp, frameH = photoDrawH + 2 * fp;
+    var B = 26, maxPW = 1120;                           // top/side white border
+    var mkCap = function (z) { return z + 'px "Permanent Marker","Patrick Hand",cursive'; };
+    var cv = document.createElement("canvas");
+    var g = cv.getContext("2d");                        // for measuring, then drawing
+    // Photo dimensions for a given bottom (caption) border height.
+    function photoFor(capBorder) {
+      var pdh = availH - B - capBorder, pdw = Math.round(pdh * a);
+      if (pdw > maxPW) { pdw = maxPW; pdh = Math.round(maxPW / a); }
+      return { pdh: pdh, pdw: pdw };
+    }
+    // Fit the task-name caption (handwritten) and size the polaroid's thick
+    // bottom border to hold it — like a real Polaroid caption.
+    var prov = photoFor(112), capMaxW = prov.pdw - 28;
+    var capSize = 42, capLines;
+    for (; capSize > 22; capSize -= 2) { g.font = mkCap(capSize); capLines = wrapAll(g, taskTitle, capMaxW); if (capLines.length <= 2) break; }
+    g.font = mkCap(capSize); capLines = wrapAll(g, taskTitle, capMaxW);
+    var capLH = Math.round(capSize * 1.14);
+    var capBorder = 22 + capLines.length * capLH + 20;
+    var f = photoFor(capBorder);
+    var photoDrawH = f.pdh, photoDrawW = f.pdw;
+    var frameW = photoDrawW + 2 * B, frameH = B + photoDrawH + capBorder;
     var sidebarW = 540;
     var W = M + frameW + gap + sidebarW + M;
 
-    var cv = document.createElement("canvas"); cv.width = W; cv.height = H;
-    var g = cv.getContext("2d");
+    cv.width = W; cv.height = H;                        // sizing resets the context
     drawFestiveBg(g, W, H);
 
     // Polaroid on the left (vertically centred in the content band), tilted a
@@ -1908,9 +1892,15 @@
     g.shadowColor = "rgba(20,12,4,.30)"; g.shadowBlur = 38; g.shadowOffsetY = 18;
     g.fillStyle = "#fff"; sRoundRect(g, frameX, frameY, frameW, frameH, 10); g.fill();
     g.shadowColor = "transparent"; g.shadowBlur = 0; g.shadowOffsetY = 0;
-    var px = frameX + fp, py = frameY + fp;
+    var px = frameX + B, py = frameY + B;
     g.save(); sRoundRect(g, px, py, photoDrawW, photoDrawH, 4); g.clip();
     g.drawImage(photoImg, px, py, photoDrawW, photoDrawH); g.restore();
+    // Handwritten caption in the thick bottom border.
+    g.font = mkCap(capSize); g.fillStyle = "#2a3a55"; g.textAlign = "center";
+    var capTop = py + photoDrawH, cy0 = capTop + (capBorder - capLines.length * capLH) / 2;
+    var pcv = g.textBaseline; g.textBaseline = "middle";
+    capLines.forEach(function (ln, i) { g.fillText(ln, fcx, cy0 + i * capLH + capLH / 2); });
+    g.textBaseline = pcv;
     drawTape(g, fcx, frameY, frameW);
     g.restore();
 
@@ -1923,11 +1913,7 @@
       var fs = fitSize(g, familyName, mk, sMaxW, 58);
       g.font = mk(fs); g.fillStyle = "#1f3a5f"; g.textAlign = "center"; g.fillText(familyName, cx, cy);
     } });
-    // The task name on a torn-paper note, directly BELOW the family name.
-    var noteM = taskPaperMetrics(g, sMaxW, taskTitle);
-    bands.push({ h: noteM.h + 22, draw: function (cx, cy) {
-      drawTaskPaper(g, cx, Math.round(cy - noteM.h / 2), noteM, seedOf(acct) + "|" + taskTitle);
-    } });
+    // (The task name is now the polaroid's handwritten caption, not here.)
     // Two columns: the mini bingo card on the LEFT, completion time + progress
     // stacked on the RIGHT.
     var mcW = 196, mcH = miniCardHeight(mcW);
@@ -1961,7 +1947,7 @@
       g.textBaseline = pv;
     } });
     bands.push({ h: 60, draw: function (cx, cy) { drawMottoAt(g, cx, cy, sMaxW); } });
-    drawBands(g, scx, contentTop, availH, bands);
+    drawBands(g, scx, contentTop, availH, bands, true);   // spread to fill the height
     return cv;
   }
 
