@@ -2160,9 +2160,10 @@
     ensureHtml2Canvas().then(function (h2c) {
       var target = document.querySelector(".bingo-card");
       if (!target) throw new Error("no card on screen");
+      var cw = target.offsetWidth || 360;
       // Target ~1000px-wide output: crisp enough for sharing, but capped so
       // the capture stays quick (scale 3 on a tall card is painfully slow).
-      var scale = Math.max(1.5, Math.min(2.5, 1000 / (target.offsetWidth || 360)));
+      var scale = Math.max(1.5, Math.min(2.5, 1000 / cw));
       // Transparent background so the real paper (frayed) is all we keep;
       // capture exactly the on-screen proportions (no layout onclone).
       return h2c(target, {
@@ -2226,6 +2227,31 @@
             im.style.width = "auto";
             im.style.objectFit = "contain";
           });
+          // COMPACT the card for the share so its aspect stays post-friendly
+          // (~near-square once framed) regardless of how tall the on-screen card
+          // grew to keep its text readable. Fixed height + equal rows, hidden
+          // "Add Photo" buttons (the sticker shows for incomplete tasks), and a
+          // smaller title/icon so nothing clips in the shorter cells.
+          if (clonedCard) {
+            var setImp = function (elm, k, v) { if (elm) elm.style.setProperty(k, v, "important"); };
+            setImp(clonedCard, "height", Math.round(cw * 1.62) + "px");
+            setImp(clonedCard, "min-height", "0");
+            setImp(clonedCard, "flex", "none");
+            var cg = clonedCard.querySelector(".grid");
+            setImp(cg, "flex", "1 1 auto");
+            setImp(cg, "min-height", "0");
+            setImp(cg, "grid-template-rows", "repeat(4, 1fr)");
+            setImp(cg, "align-content", "stretch");
+            Array.prototype.forEach.call(clonedCard.querySelectorAll(".cell-cam"), function (b) { b.style.setProperty("display", "none", "important"); });
+            Array.prototype.forEach.call(clonedCard.querySelectorAll(".cell-title"), function (t) {
+              t.style.setProperty("font-size", "clamp(8px, 2.6vw, 11px)", "important");
+              t.style.setProperty("line-height", "1.08", "important");
+            });
+            Array.prototype.forEach.call(clonedCard.querySelectorAll(".cell-icon"), function (ic) {
+              ic.style.setProperty("height", "clamp(24px, 7vw, 36px)", "important");
+              ic.style.setProperty("flex", "0 0 auto", "important");
+            });
+          }
         }
       });
     }).then(function (shot) {
