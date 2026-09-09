@@ -752,15 +752,12 @@ body {
    Fit-to-viewport board (everything on one screen, no scrolling)
    ===================================================================== */
 body.board-active {
-  height: 100vh;
-  height: 100dvh;
-  /* The base `body { min-height: 100vh }` floor (the LARGE viewport, e.g. 786px)
-     otherwise keeps the body taller than the DYNAMIC viewport (100dvh, e.g.
-     746px), so the page overflowed by exactly that gap and scrolled — which let
-     the top slide under the status bar. Drop the floor so the body is exactly
-     the dynamic viewport height and never scrolls. */
-  min-height: 0;
-  overflow: hidden;
+  /* Fill the viewport at a minimum, but let the whole page grow and scroll as
+     one when the card is taller than the screen — the header/brand scroll away
+     with it rather than staying frozen while only an inner pane scrolls.
+     100dvh (not the base 100vh floor) so a short card sits exactly in the
+     dynamic viewport with no spurious scroll. */
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   padding-bottom: 0;
@@ -792,22 +789,20 @@ body.board-active .account-info strong { font-size: 14px; }
 body.board-active .switchBtn, body.board-active #switchBtn { padding: 7px 14px; font-size: 13px; }
 
 body.board-active .app-main {
-  flex: 1;
-  min-height: 0;
+  /* Grow to fill the viewport when the card is short, but never shrink below
+     the card's content — so a tall card pushes the whole page taller and the
+     document (header included) scrolls, instead of an inner pane scrolling
+     under a frozen header. */
+  flex: 1 0 auto;
   display: block;
-  /* Scroll when the card needs more room than one screen, so the titles never
-     have to shrink to an unreadable size. The card fills the viewport on tall
-     screens and only grows into this scroll area when its content is taller. */
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
   /* keep the card clear of the very bottom of the screen (+ safe area) */
   padding: 6px 12px calc(env(safe-area-inset-bottom, 0px) + 22px);
   max-width: 720px;
+  width: 100%;
+  margin: 0 auto;
 }
 body.board-active #board {
-  flex: 1;
-  min-height: 0;
+  flex: 1 0 auto;
   display: flex;
   flex-direction: column;
 }
