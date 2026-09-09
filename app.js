@@ -2000,15 +2000,28 @@
       g.font = mk(pS); g.fillStyle = "#e8543f"; g.fillText(pTxt, rcx, y + labH + pS - 4);
       g.textBaseline = pv;
     } });
-    bands.push({ h: 60, draw: function (cx, cy) { drawMottoAt(g, cx, cy, sMaxW); } });
+    // Footer band: the motto stacked on FOUR lines (Love / Share / Serve /
+    // Together) on the left, with the BFF sticker to its right — i.e. the
+    // lower-right corner of the share image.
+    var stkW = bff ? Math.round(sidebarW * 0.40) : 0;
+    bands.push({ h: 216, draw: function (cx, cy) {
+      var words = [["Love.", "#e8543f"], ["Share.", "#2fa3a0"], ["Serve.", "#6fae4a"], ["Together.", "#1f3a5f"]];
+      var mLeft = cx - sidebarW / 2 + 8;
+      var mColW = sidebarW - stkW - 24;
+      var size = 46, lineH;
+      // Shrink so the widest word fits the motto column.
+      var fits = function (sz) { g.font = '800 ' + sz + 'px "Baloo 2","Nunito",sans-serif'; var m = 0; words.forEach(function (w) { m = Math.max(m, g.measureText(w[0]).width); }); return m <= mColW; };
+      while (size > 24 && !fits(size)) size -= 2;
+      lineH = Math.round(size * 1.12);
+      var totalH = lineH * 4, ty = cy - totalH / 2;
+      var pa = g.textAlign, pb = g.textBaseline;
+      g.textAlign = "left"; g.textBaseline = "middle";
+      g.font = '800 ' + size + 'px "Baloo 2","Nunito",sans-serif';
+      words.forEach(function (w, i) { g.fillStyle = w[1]; g.fillText(w[0], mLeft, ty + i * lineH + lineH / 2); });
+      g.textAlign = pa; g.textBaseline = pb;
+      if (bff) drawBffSticker(g, bff, cx + sidebarW / 2 - stkW / 2 - 6, cy, stkW, -6);
+    } });
     drawBands(g, scx, contentTop, availH, bands, true);   // spread to fill the height
-    // BFF sticker in the polaroid's TOP-LEFT corner (clear of the top-centre
-    // tape and the bottom caption), with a drop shadow.
-    if (bff) {
-      var bw = Math.round(frameW * 0.48);
-      var bh = bw * bff.height / bff.width;
-      drawBffSticker(g, bff, frameX + Math.round(frameW * 0.08), frameY + Math.round(bh * 0.34), bw, -7);
-    }
     return cv;
   }
 

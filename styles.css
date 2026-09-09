@@ -1325,8 +1325,8 @@ body.board-active .cell-cam .cam-tx { font-size: clamp(11px, 3vw, 15px); }
    bottom-right corner with a slight tilt and a drop shadow. */
 .cork-sticker {
   position: absolute; z-index: 4; pointer-events: none;
-  right: -12px; bottom: -30px;
-  width: 43%; max-width: 240px; aspect-ratio: 1448 / 1086;
+  left: 6px; top: 6px;
+  width: 40%; max-width: 220px; aspect-ratio: 1448 / 1086;
   background: url("assets/stickers/bff sticker.png") center / contain no-repeat;
   transform: rotate(-6deg);
   filter: drop-shadow(0 7px 9px rgba(0, 0, 0, 0.42));
