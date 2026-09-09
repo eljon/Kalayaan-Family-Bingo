@@ -197,6 +197,7 @@ older version by URL slug**:
 | `/v161`  | Version 161 snapshot (the whole-card "Share card" image is post-ready again — a near-square 1:1 format; the card is compacted for the capture only so the tall, scroll-to-read on-screen layout no longer stretches the shared image, with the Add Photo buttons hidden and titles sized to never clip) |
 | `/v162`  | Version 162 snapshot (bigger buttons — the Wall/Share-card board bar, the coverflow Share/Replace/Remove, and the task-share Share button, which also sits closer to the photo; the version badge now shows only in admin mode; and the admin can Share any family's card or photo) |
 | `/v163`  | Version 163 snapshot (fix: tapping a photo in the coverflow to view it full-screen now shows the photo from the card being viewed, not the signed-in user's own — and it works for the admin too, who has no signed-in card) |
+| `/v164`  | Version 164 snapshot (fix: removing a photo now fully clears the task — the completion/progress is actually deleted in the cloud with a field-delete instead of a merge-save that kept it, so it no longer comes back on reload; owner "Remove" and admin task-delete share one code path) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap

@@ -2452,12 +2452,24 @@
     });
   });
 
+  // Fully undo a completed task: unmark it, delete the photo, AND — in cloud
+  // mode — actually delete the `done.<taskId>` field (a merge-save keeps it,
+  // which is why the progress used to come back) plus the photo doc, so nothing
+  // lingers. Shared by the owner's "Remove" and the admin's task delete.
+  function wipeCompletion(acct, taskId) {
+    if (acct && acct.done) delete acct.done[taskId];
+    putAccount(acct);
+    var work = delPhoto(acct, taskId);                 // local IndexedDB + Cloud.deletePhoto
+    if (Cloud.enabled && !acct.local) {
+      work = work.then(function () { return Cloud.deleteTask(acct.name, taskId); });
+    }
+    return work.catch(function () {});
+  }
+
   function removePhoto() {
-    if (!activeTaskId) return;
+    if (!activeTaskId || !current) return;
     var taskId = activeTaskId;
-    delPhoto(current, taskId).then(function () {
-      if (current.done) delete current.done[taskId];
-      updateAccount(current);
+    wipeCompletion(current, taskId).then(function () {
       renderBoard();
       closeModal();
       showToast("Photo removed.");
@@ -2465,11 +2477,8 @@
   }
 
   function removePhotoFor(taskId) {
-    return delPhoto(current, taskId).then(function () {
-      if (current.done) delete current.done[taskId];
-      updateAccount(current);
-      renderBoard();
-    });
+    if (!current) return Promise.resolve();
+    return wipeCompletion(current, taskId).then(function () { renderBoard(); });
   }
 
   /* ------------------------------------------------------------------ */
@@ -3179,19 +3188,9 @@
       renderWard();
     });
   }
-  // Remove ONE completed task from a card (unmarks it + deletes its photo).
+  // Admin: remove ONE completed task from a card (unmarks it + deletes photo).
   function deleteTask(acct, taskId) {
-    if (acct.done) delete acct.done[taskId];
-    putAccount(acct);                                  // update local cache
-    var id = acct.id || Cloud.docId(acct.name);
-    idbDelete(photoKey(id, taskId));                   // this device's cached photo
-    var work = Promise.resolve();
-    if (Cloud.enabled && !acct.local) {
-      work = Cloud.deleteTask(acct.name, taskId)
-        .then(function () { return Cloud.deletePhoto(acct.name, taskId); });
-    }
-    if (el.cardStat) el.cardStat.textContent = Object.keys(acct.done || {}).length + "/" + TASKS.length;
-    work.catch(function () {}).then(function () {
+    wipeCompletion(acct, taskId).then(function () {
       showToast("Task removed.");
       renderBoard(acct);                               // re-render this card
     });
