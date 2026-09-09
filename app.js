@@ -1563,6 +1563,28 @@
       img.src = src;
     });
   }
+  // The "Building Forever Families 2026" sticker, added as a festive accent to
+  // the shared images (loaded once, cached; null if it fails to load).
+  var BFF_SRC = ICON_BASE + "bff sticker.png";
+  var _bffP = null;
+  function getBff() {
+    if (!_bffP) _bffP = loadImage(encodeURI(BFF_SRC)).then(function (im) { return im; }, function () { return null; });
+    return _bffP;
+  }
+  // Draw the sticker centred at (cx, cy), `w` wide, tilted, with a soft shadow.
+  function drawBffSticker(g, img, cx, cy, w, angleDeg) {
+    if (!img || !img.width) return;
+    var h = w * img.height / img.width;
+    g.save();
+    g.translate(cx, cy);
+    g.rotate((angleDeg || 0) * Math.PI / 180);
+    g.shadowColor = "rgba(18,12,4,0.38)";
+    g.shadowBlur = Math.round(w * 0.06);
+    g.shadowOffsetX = Math.round(w * 0.01);
+    g.shadowOffsetY = Math.round(w * 0.03);
+    g.drawImage(img, -w / 2, -h / 2, w, h);
+    g.restore();
+  }
   function sRoundRect(g, x, y, w, h, r) {
     if (g.roundRect) { g.beginPath(); g.roundRect(x, y, w, h, r); return; }
     g.beginPath();
@@ -1882,7 +1904,7 @@
   // social feed: the photo (CONTAINED, never cropped) sits in a tilted polaroid
   // on the left; a festive brand column (KALAYAAN WARD / FAMILY BINGO, the
   // activity, family, progress, date, motto) runs down the right.
-  function composeFeaturedImage(photoImg, taskTitle, familyName, doneCount, ts, acct) {
+  function composeFeaturedImage(photoImg, taskTitle, familyName, doneCount, ts, acct, bff) {
     var H = 1180, M = 76, contentTop = 116, bottomM = 76, gap = 56;
     var availH = H - contentTop - bottomM;
     var a = (photoImg.width && photoImg.height) ? photoImg.width / photoImg.height : 1;
@@ -1978,6 +2000,13 @@
     } });
     bands.push({ h: 60, draw: function (cx, cy) { drawMottoAt(g, cx, cy, sMaxW); } });
     drawBands(g, scx, contentTop, availH, bands, true);   // spread to fill the height
+    // BFF sticker in the polaroid's TOP-LEFT corner (clear of the top-centre
+    // tape and the bottom caption), with a drop shadow.
+    if (bff) {
+      var bw = Math.round(frameW * 0.48);
+      var bh = bw * bff.height / bff.width;
+      drawBffSticker(g, bff, frameX + Math.round(frameW * 0.08), frameY + Math.round(bh * 0.34), bw, -7);
+    }
     return cv;
   }
 
@@ -2012,8 +2041,8 @@
     activeSeed = prevSeed;   // borders/tilts already captured synchronously above
     var ready = (document.fonts && document.fonts.ready) ? document.fonts.ready.catch(function () {}) : Promise.resolve();
 
-    return Promise.all([Promise.all(loaders), ready]).then(function (res) {
-      var items = res[0];
+    return Promise.all([Promise.all(loaders), ready, getBff()]).then(function (res) {
+      var items = res[0], bff = res[2];
       var cardMargin = 40, cardX = cardMargin, cardW = W - 2 * cardMargin, pad = 34;
       var gap = 16, cols = 3, rows = 4;
       var gridX = cardX + pad, gridW = cardW - 2 * pad;
@@ -2082,6 +2111,7 @@
       });
 
       drawMotto(g, W, cardTop + cardH - 30);
+      if (bff) drawBffSticker(g, bff, Math.round(W * 0.7), Math.round(cardTop + cardH - W * 0.02), Math.round(W * 0.4), -6);
       tmpUrls.forEach(function (u) { try { URL.revokeObjectURL(u); } catch (e) {} });
       return cv;
     });
@@ -2119,10 +2149,10 @@
     var doneCount = Object.keys(acct.done || {}).length;
     var own = !blob, srcP = blob ? Promise.resolve(URL.createObjectURL(blob)) : getPhotoSrc(acct, taskId, []);
     var ready = (document.fonts && document.fonts.ready) ? document.fonts.ready.catch(function () {}) : Promise.resolve();
-    Promise.all([srcP, ready]).then(function (r) {
-      var src = r[0]; if (!src) return;
+    Promise.all([srcP, ready, getBff()]).then(function (r) {
+      var src = r[0], bff = r[2]; if (!src) return;
       return loadImage(src).then(function (img) {
-        showShareCanvas(composeFeaturedImage(img, task.title, familyName, doneCount, ts, acct), true);
+        showShareCanvas(composeFeaturedImage(img, task.title, familyName, doneCount, ts, acct, bff), true);
         if (blob) URL.revokeObjectURL(src);
       });
     }).catch(function () {});
@@ -2256,7 +2286,9 @@
         }
       });
     }).then(function (shot) {
-      showShareCanvas(frameCardShot(shot, seedOf(boardAcct || current)));
+      return getBff().then(function (bff) {
+        showShareCanvas(frameCardShot(shot, seedOf(boardAcct || current), bff));
+      });
     }).catch(function () {
       composeCardImage(acct).then(showShareCanvas).catch(function () {
         showToast("Couldn't build the card image.");
@@ -2269,7 +2301,7 @@
   // then lay it out LANDSCAPE / near-square for a mobile social feed: the frayed
   // card on the left, a festive brand column (bunting, KALAYAAN WARD, FAMILY
   // BINGO, motto) down the right.
-  function frameCardShot(shot, seed) {
+  function frameCardShot(shot, seed, bff) {
     var w = shot.width, h = shot.height;
     // Re-clip to the frayed shape. On screen the paper's cast shadow follows
     // the masked alpha and makes the wear read; a flat exported image has no
@@ -2315,6 +2347,10 @@
     var bands = brandTitleBands(g, sMaxW).concat([
       { h: 66, draw: function (cx, cy) { drawMottoAt(g, cx, cy, sMaxW); } }
     ]);
+    // Leave a slot at the bottom of the column for the BFF sticker.
+    if (bff) bands.push({ h: Math.round(sidebarW * 0.62), draw: function (cx, cy) {
+      drawBffSticker(g, bff, cx, cy, Math.round(sidebarW * 0.94), -5);
+    } });
     drawBands(g, scx, topPad, h, bands);
     return out;
   }

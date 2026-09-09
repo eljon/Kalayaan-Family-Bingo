@@ -1321,6 +1321,16 @@ body.board-active .cell-cam .cam-tx { font-size: clamp(11px, 3vw, 15px); }
    through to the card beneath. */
 
 .ward-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px 10px; }
+/* "Building Forever Families 2026" sticker, slapped onto the corkboard's
+   bottom-right corner with a slight tilt and a drop shadow. */
+.cork-sticker {
+  position: absolute; z-index: 4; pointer-events: none;
+  right: -12px; bottom: -30px;
+  width: 43%; max-width: 240px; aspect-ratio: 1448 / 1086;
+  background: url("assets/stickers/bff sticker.png") center / contain no-repeat;
+  transform: rotate(-6deg);
+  filter: drop-shadow(0 7px 9px rgba(0, 0, 0, 0.42));
+}
 /* Each card is pinned to the cork: a slight seeded tilt + a steel pin, nothing else. */
 .ward-mini {
   display: block; position: relative; text-align: center;
