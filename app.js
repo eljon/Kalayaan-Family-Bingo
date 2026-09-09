@@ -1058,7 +1058,7 @@
     if ((!cards.length && !note && !lead) || prefersReduced()) {
       cards.forEach(function (c) { c.style.visibility = ""; });
       if (note) note.style.visibility = "";
-      if (lead) lead.style.visibility = "";
+      if (lead) lead.style.visibility = "visible";   // CSS default is hidden
       return;
     }
     var W = window.innerWidth, H = window.innerHeight;
@@ -1080,7 +1080,7 @@
     // arrival time so the note can be scheduled after every card has landed.
     function computeIntro(el, delay) {
       var r = el.getBoundingClientRect();
-      if (!r.width) { el.__intro = null; el.style.visibility = ""; return 0; }
+      if (!r.width) { el.__intro = null; el.style.visibility = "visible"; return 0; }
       var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
       var ang = Math.random() * Math.PI * 2;
       var dx = Math.cos(ang), dy = Math.sin(ang);        // fly-IN direction
@@ -1118,7 +1118,8 @@
       maxTotal = Math.max(maxTotal, d.delay + d.dur);
       // Seat the off-screen start + hidden tape synchronously (before first
       // paint) and reveal (playWallIntroOnce hid it while layout settled).
-      el.style.visibility = "";
+      // "visible" (not "") because the sticker's CSS default is hidden.
+      el.style.visibility = "visible";
       el.style.transition = "none";
       el.style.transform = d.off;
       if (d.tape) {
@@ -1289,14 +1290,14 @@
     if (!players.length) {
       el.wardEmpty.hidden = false;
       if (el.corkNote) el.corkNote.hidden = true;
-      if (el.corkSticker) el.corkSticker.style.visibility = "";
+      if (el.corkSticker) el.corkSticker.style.visibility = "visible";
       return;
     }
     el.wardEmpty.hidden = true;
     var finished = 0, cardEls = [], hideForIntro = !wallIntroDone && !prefersReduced();
     // The BFF sticker flies in with the cards (it leads the intro); hide it in
     // place until then so it doesn't paint before the animation.
-    if (el.corkSticker) el.corkSticker.style.visibility = hideForIntro ? "hidden" : "";
+    if (el.corkSticker) el.corkSticker.style.visibility = hideForIntro ? "hidden" : "visible";
     players.forEach(function (p) {
       if (Object.keys(p.done || {}).length === TASKS.length) finished++;
       var c = buildMiniCard(p);
@@ -1343,7 +1344,7 @@
     if ((!cards.length && !note && !lead) || prefersReduced()) {
       cards.forEach(function (c) { c.style.visibility = ""; });   // no intro: just show them
       if (note) note.style.visibility = "";
-      if (lead) lead.style.visibility = "";
+      if (lead) lead.style.visibility = "visible";   // CSS default is hidden
       return;
     }
     // Cards/note/sticker were built hidden (see renderWardGrid); reveal happens
