@@ -642,6 +642,12 @@
   /* decoded by <img>, so try createImageBitmap first, then <img>, and  */
   /* if all decoding fails keep the original file so nothing is lost.    */
   /* ------------------------------------------------------------------ */
+  // Keep the on-device photo at (near) full resolution and quality so the
+  // shared image looks crisp, not compressed. The local copy (IndexedDB) holds
+  // this high-quality version; the cloud copy is separately budgeted down to
+  // fit Firestore (see blobToBudgetDataURL) without affecting the share.
+  var PHOTO_MAX_DIM = 4096;   // don't upscale; only cap enormous captures
+  var PHOTO_QUALITY = 0.95;   // visually lossless JPEG
   function dataURLtoBlob(dataURL) {
     var parts = dataURL.split(",");
     var mime = (parts[0].match(/:(.*?);/) || [])[1] || "image/jpeg";
@@ -1964,7 +1970,13 @@
     var sidebarW = 540;
     var W = M + frameW + gap + sidebarW + M;
 
-    cv.width = W; cv.height = H;                        // sizing resets the context
+    // Render at 2× so the embedded photo (and everything else) stays crisp in
+    // the exported PNG instead of being downsampled to the layout size. All
+    // drawing below still uses logical coordinates.
+    var S = 2;
+    cv.width = W * S; cv.height = H * S;                // sizing resets the context
+    g.scale(S, S);
+    g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high";
     drawFestiveBg(g, W, H);
 
     // Polaroid on the left (vertically centred in the content band), tilted a
@@ -2460,7 +2472,7 @@
     var taskId = activeTaskId;
     el.modalUploadLabel.textContent = "Processing…";
 
-    compressImage(file, 1280, 0.82).then(function (blob) {
+    compressImage(file, PHOTO_MAX_DIM, PHOTO_QUALITY).then(function (blob) {
       return putPhoto(current, taskId, blob).then(function () { return blob; });
     }).then(function (blob) {
       var wasDone = !!(current.done && current.done[taskId]);
@@ -2517,7 +2529,7 @@
     if (!/^image\//.test(file.type)) { showToast("Please choose an image file."); return; }
 
     showToast(Cloud.enabled && !(current && current.local) ? "Uploading photo…" : "Adding photo…");
-    compressImage(file, 1280, 0.82).then(function (blob) {
+    compressImage(file, PHOTO_MAX_DIM, PHOTO_QUALITY).then(function (blob) {
       return putPhoto(current, taskId, blob).then(function () { return blob; });
     }).then(function (blob) {
       var wasDone = !!(current.done && current.done[taskId]);

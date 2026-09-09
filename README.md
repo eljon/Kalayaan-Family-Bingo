@@ -208,6 +208,7 @@ older version by URL slug**:
 | `/v172`  | Version 172 snapshot (the BFF sticker no longer flies in — it now gets "stuck on" like a real sticker: the top-left corner touches down first, then the rest unfolds flat with a small slap-down settle, played as the first thing in the Wall intro) |
 | `/v173`  | Version 173 snapshot (reworked the sticker placement so it truly unfolds instead of flipping: a diagonal clip-path reveal spreads the sticker from the top-left corner out to the far corner, with a light sheen riding the unfolding edge) |
 | `/v174`  | Version 174 snapshot (in the card view the whole page now scrolls as one — the brand header scrolls away with the card instead of staying frozen while only an inner pane scrolled) |
+| `/v175`  | Version 175 snapshot (shared photos are now full resolution and crisp — captures keep near-original resolution at high quality (up to 4096px @ 0.95) instead of 1280px @ 0.82, and the featured share image renders at 2× so the embedded photo isn't downsampled; the cloud copy is still budgeted down to fit Firestore separately) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
