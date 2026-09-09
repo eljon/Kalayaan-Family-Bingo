@@ -2413,9 +2413,10 @@
   }
 
   function doShare() {
-    // Each hashtag on its own line — Facebook's composer tends to swallow a
-    // second hashtag when both sit on one space-separated line.
-    var text = "#bff2026\n#KalayaanKapamilya";
+    // Both hashtags on ONE line (no newline): Facebook's share composer keeps
+    // only the first line of the shared text, so a line break dropped the
+    // second tag. A single space-separated line survives intact.
+    var text = "#bff2026 #KalayaanKapamilya";
     if (shareFile && navigator.canShare && navigator.canShare({ files: [shareFile] })) {
       navigator.share({ files: [shareFile], title: "Family Bingo", text: text })
         .catch(function () {});
