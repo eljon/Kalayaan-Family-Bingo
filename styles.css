@@ -1270,6 +1270,11 @@ body.board-active .cell-cam .cam-tx { font-size: clamp(11px, 3vw, 15px); }
   position: relative;
   border-radius: 5px;
   padding: 22px 13px 28px;
+  /* Fill the page from the very first paint so the board never starts small
+     and grows as families (and their fly-in) arrive. Only a floor: a long
+     roster still grows past it. Offset ≈ header + bunting + join bar zone. */
+  min-height: calc(100vh - 280px);
+  min-height: calc(100dvh - 280px);
   background-color: #c6a367;
   background-image:
     radial-gradient(circle at 18% 22%, rgba(255,241,208,.28), transparent 40%),

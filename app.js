@@ -1103,14 +1103,24 @@
       };
       return delay + el.__intro.dur;
     }
-    // The BFF sticker leads (delay 0), then the cards (staggered starts that all
-    // begin after the sticker), then the note AFTER the last card has landed.
+    // Only the cards visible in the first viewport fly in; the rest (below the
+    // fold, off-screen anyway) are just revealed in place. This keeps the intro
+    // short and lets the "X families" note arrive sooner — it waits only on the
+    // handful of cards that actually animate, not the whole roster.
+    var animCards = [], restCards = [];
+    cards.forEach(function (card) {
+      var r = card.getBoundingClientRect();
+      if (r.width && r.top < H) animCards.push(card); else restCards.push(card);
+    });
+    restCards.forEach(function (card) { card.style.visibility = ""; card.__intro = null; });
+    // The BFF sticker leads (delay 0), then the visible cards (staggered starts
+    // that all begin after the sticker), then the note AFTER the last has landed.
     if (lead) computeIntro(lead, 0);
     var lastCard = 0;
-    cards.forEach(function (card) { lastCard = Math.max(lastCard, computeIntro(card, 110 + Math.random() * 300)); });
+    animCards.forEach(function (card) { lastCard = Math.max(lastCard, computeIntro(card, 110 + Math.random() * 300)); });
     if (note) computeIntro(note, lastCard + 140);
     var items = lead ? [lead] : [];
-    items = items.concat(cards);
+    items = items.concat(animCards);
     if (note) items.push(note);
     var maxTotal = 0;
     items.forEach(function (el) {

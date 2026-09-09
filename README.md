@@ -204,6 +204,7 @@ older version by URL slug**:
 | `/v168`  | Version 168 snapshot (BFF sticker repositioned: on the task-share image it sits in the lower-right corner beside the motto, which now stacks on four lines — Love / Share / Serve / Together; on the Wall it moves to the corkboard's upper-left, above the first card and inside the borders) |
 | `/v169`  | Version 169 snapshot (Wall sticker is smaller so it never touches a card, and it now flies in with the same intro animation as the cards — leading the sequence; the task-share sticker is enlarged to fill the lower-right; the share caption puts each hashtag on its own line so Facebook keeps both) |
 | `/v170`  | Version 170 snapshot (the Wall sticker no longer flashes in place before its fly-in — it now defaults to hidden and is only revealed once the intro seats it off-screen; also fixes it staying visible for reduced-motion users) |
+| `/v171`  | Version 171 snapshot (the corkboard now fills the page from the first paint instead of starting small and growing; the fly-in only animates the cards in the first viewport — the rest appear in place — so the "X families" note arrives sooner, no longer waiting on the whole roster) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
