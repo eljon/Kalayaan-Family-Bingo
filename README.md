@@ -199,6 +199,7 @@ older version by URL slug**:
 | `/v163`  | Version 163 snapshot (fix: tapping a photo in the coverflow to view it full-screen now shows the photo from the card being viewed, not the signed-in user's own — and it works for the admin too, who has no signed-in card) |
 | `/v164`  | Version 164 snapshot (fix: removing a photo now fully clears the task — the completion/progress is actually deleted in the cloud with a field-delete instead of a merge-save that kept it, so it no longer comes back on reload; owner "Remove" and admin task-delete share one code path) |
 | `/v165`  | Version 165 snapshot (the "Building Forever Families 2026" sticker now appears — pinned to the corkboard's corner on the Wall, on the polaroid corner of the task-share image, and in the brand column of the card-share image — each with a drop shadow) |
+| `/v166`  | Version 166 snapshot (share images no longer double up "Family" — a name that already contains "fam"/"family" is shown as-is instead of becoming "… Fam Family"; the native-share caption now includes the #bff2026 and #KalayaanKapamilya hashtags) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap

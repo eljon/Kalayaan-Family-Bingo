@@ -810,7 +810,9 @@
   // Family name as shown on the card ("… Family" appended unless already there).
   function displayName(name) {
     var nm = (name || "").trim();
-    return /family\s*$/i.test(nm) ? nm : (nm + " Family");
+    // Don't tack on "Family" if the name already contains "fam"/"family"
+    // anywhere (e.g. "Eljon Jidi Fam" shouldn't become "… Fam Family").
+    return /fam/i.test(nm) ? nm : (nm + " Family");
   }
   // Just the family's name, without a trailing "Family" — used on the Wall and
   // card view where the "Family" word is redundant and eats space.
@@ -2356,7 +2358,7 @@
   }
 
   function doShare() {
-    var text = "We're playing Kalayaan Ward Family Bingo! ❤️";
+    var text = "We're playing Kalayaan Ward Family Bingo! #bff2026 #KalayaanKapamilya";
     if (shareFile && navigator.canShare && navigator.canShare({ files: [shareFile] })) {
       navigator.share({ files: [shareFile], title: "Family Bingo", text: text })
         .catch(function () {});
