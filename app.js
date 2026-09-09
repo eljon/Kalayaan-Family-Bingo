@@ -2358,7 +2358,7 @@
   }
 
   function doShare() {
-    var text = "We're playing Kalayaan Ward Family Bingo! #bff2026 #KalayaanKapamilya";
+    var text = "#bff2026 #KalayaanKapamilya";
     if (shareFile && navigator.canShare && navigator.canShare({ files: [shareFile] })) {
       navigator.share({ files: [shareFile], title: "Family Bingo", text: text })
         .catch(function () {});
