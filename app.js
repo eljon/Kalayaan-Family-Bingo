@@ -745,6 +745,7 @@
     ward: document.getElementById("ward"),
     wardGrid: document.getElementById("wardGrid"),
     corkNote: document.getElementById("corkNote"),
+    corkSticker: document.getElementById("corkSticker"),
     wardCount: document.getElementById("wardCount"),
     wardEmpty: document.getElementById("wardEmpty"),
     joinBar: document.getElementById("joinBar"),
@@ -1052,11 +1053,12 @@
   // card moves at the SAME SPEED, so its travel time is proportional to its
   // distance. When a card lands, its tape pops into place.
   var wallIntroDone = false;
-  function introAnimateWall(cards, note) {
+  function introAnimateWall(cards, note, lead) {
     cards = cards || [];
-    if ((!cards.length && !note) || prefersReduced()) {
+    if ((!cards.length && !note && !lead) || prefersReduced()) {
       cards.forEach(function (c) { c.style.visibility = ""; });
       if (note) note.style.visibility = "";
+      if (lead) lead.style.visibility = "";
       return;
     }
     var W = window.innerWidth, H = window.innerHeight;
@@ -1101,12 +1103,15 @@
       };
       return delay + el.__intro.dur;
     }
-    // Cards first (staggered random starts), then the note AFTER the last card
-    // has fully landed.
+    // The BFF sticker leads (delay 0), then the cards (staggered starts that all
+    // begin after the sticker), then the note AFTER the last card has landed.
+    if (lead) computeIntro(lead, 0);
     var lastCard = 0;
-    cards.forEach(function (card) { lastCard = Math.max(lastCard, computeIntro(card, Math.random() * 340)); });
+    cards.forEach(function (card) { lastCard = Math.max(lastCard, computeIntro(card, 110 + Math.random() * 300)); });
     if (note) computeIntro(note, lastCard + 140);
-    var items = note ? cards.concat([note]) : cards;
+    var items = lead ? [lead] : [];
+    items = items.concat(cards);
+    if (note) items.push(note);
     var maxTotal = 0;
     items.forEach(function (el) {
       var d = el.__intro; if (!d) return;
@@ -1284,10 +1289,14 @@
     if (!players.length) {
       el.wardEmpty.hidden = false;
       if (el.corkNote) el.corkNote.hidden = true;
+      if (el.corkSticker) el.corkSticker.style.visibility = "";
       return;
     }
     el.wardEmpty.hidden = true;
     var finished = 0, cardEls = [], hideForIntro = !wallIntroDone && !prefersReduced();
+    // The BFF sticker flies in with the cards (it leads the intro); hide it in
+    // place until then so it doesn't paint before the animation.
+    if (el.corkSticker) el.corkSticker.style.visibility = hideForIntro ? "hidden" : "";
     players.forEach(function (p) {
       if (Object.keys(p.done || {}).length === TASKS.length) finished++;
       var c = buildMiniCard(p);
@@ -1329,18 +1338,21 @@
     var cards = [].slice.call(el.wardGrid.querySelectorAll(".ward-mini"));
     // The "X families" note flies in AFTER all the cards have landed.
     var note = (el.corkNote && !el.corkNote.hidden) ? el.corkNote : null;
-    if ((!cards.length && !note) || prefersReduced()) {
+    // The BFF sticker leads the whole intro (it flies in FIRST).
+    var lead = el.corkSticker || null;
+    if ((!cards.length && !note && !lead) || prefersReduced()) {
       cards.forEach(function (c) { c.style.visibility = ""; });   // no intro: just show them
       if (note) note.style.visibility = "";
+      if (lead) lead.style.visibility = "";
       return;
     }
-    // Cards/note were built hidden (see renderWardGrid); reveal happens in
-    // introAnimateWall as each is seated off-screen.
+    // Cards/note/sticker were built hidden (see renderWardGrid); reveal happens
+    // in introAnimateWall as each is seated off-screen.
     var fire = function () {
       // Two frames after fonts settle: name auto-fit has run and the board is
       // at its final size, so measuring + flying can't cause a resize.
       requestAnimationFrame(function () {
-        requestAnimationFrame(function () { introAnimateWall(cards, note); });
+        requestAnimationFrame(function () { introAnimateWall(cards, note, lead); });
       });
     };
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(fire).catch(fire);
@@ -2003,11 +2015,11 @@
     // Footer band: the motto stacked on FOUR lines (Love / Share / Serve /
     // Together) on the left, with the BFF sticker to its right — i.e. the
     // lower-right corner of the share image.
-    var stkW = bff ? Math.round(sidebarW * 0.40) : 0;
-    bands.push({ h: 216, draw: function (cx, cy) {
+    var stkW = bff ? Math.round(sidebarW * 0.60) : 0;
+    bands.push({ h: bff ? Math.round(stkW * bff.height / bff.width) + 12 : 200, draw: function (cx, cy) {
       var words = [["Love.", "#e8543f"], ["Share.", "#2fa3a0"], ["Serve.", "#6fae4a"], ["Together.", "#1f3a5f"]];
       var mLeft = cx - sidebarW / 2 + 8;
-      var mColW = sidebarW - stkW - 24;
+      var mColW = sidebarW - stkW - 16;
       var size = 46, lineH;
       // Shrink so the widest word fits the motto column.
       var fits = function (sz) { g.font = '800 ' + sz + 'px "Baloo 2","Nunito",sans-serif'; var m = 0; words.forEach(function (w) { m = Math.max(m, g.measureText(w[0]).width); }); return m <= mColW; };
@@ -2019,7 +2031,7 @@
       g.font = '800 ' + size + 'px "Baloo 2","Nunito",sans-serif';
       words.forEach(function (w, i) { g.fillStyle = w[1]; g.fillText(w[0], mLeft, ty + i * lineH + lineH / 2); });
       g.textAlign = pa; g.textBaseline = pb;
-      if (bff) drawBffSticker(g, bff, cx + sidebarW / 2 - stkW / 2 - 6, cy, stkW, -6);
+      if (bff) drawBffSticker(g, bff, cx + sidebarW / 2 - stkW / 2 - 2, cy, stkW, -6);
     } });
     drawBands(g, scx, contentTop, availH, bands, true);   // spread to fill the height
     return cv;
@@ -2371,7 +2383,9 @@
   }
 
   function doShare() {
-    var text = "#bff2026 #KalayaanKapamilya";
+    // Each hashtag on its own line — Facebook's composer tends to swallow a
+    // second hashtag when both sit on one space-separated line.
+    var text = "#bff2026\n#KalayaanKapamilya";
     if (shareFile && navigator.canShare && navigator.canShare({ files: [shareFile] })) {
       navigator.share({ files: [shareFile], title: "Family Bingo", text: text })
         .catch(function () {});

@@ -202,6 +202,7 @@ older version by URL slug**:
 | `/v166`  | Version 166 snapshot (share images no longer double up "Family" — a name that already contains "fam"/"family" is shown as-is instead of becoming "… Fam Family"; the native-share caption now includes the #bff2026 and #KalayaanKapamilya hashtags) |
 | `/v167`  | Version 167 snapshot (the native-share caption is now just the hashtags — "#bff2026 #KalayaanKapamilya" — dropping the leading "We're playing…" sentence) |
 | `/v168`  | Version 168 snapshot (BFF sticker repositioned: on the task-share image it sits in the lower-right corner beside the motto, which now stacks on four lines — Love / Share / Serve / Together; on the Wall it moves to the corkboard's upper-left, above the first card and inside the borders) |
+| `/v169`  | Version 169 snapshot (Wall sticker is smaller so it never touches a card, and it now flies in with the same intro animation as the cards — leading the sequence; the task-share sticker is enlarged to fill the lower-right; the share caption puts each hashtag on its own line so Facebook keeps both) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
