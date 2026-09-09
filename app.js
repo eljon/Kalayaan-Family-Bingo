@@ -1113,14 +1113,21 @@
       if (r.width && r.top < H) animCards.push(card); else restCards.push(card);
     });
     restCards.forEach(function (card) { card.style.visibility = ""; card.__intro = null; });
-    // The BFF sticker leads (delay 0), then the visible cards (staggered starts
-    // that all begin after the sticker), then the note AFTER the last has landed.
-    if (lead) computeIntro(lead, 0);
+    // The BFF sticker leads: it doesn't fly in, it gets "stuck on" — the corner
+    // touches first, then the rest unfolds flat (a CSS keyframe). Trigger it now,
+    // before the cards start, so it's the first thing to move.
+    if (lead) {
+      lead.style.visibility = "visible";
+      lead.classList.remove("sticking");
+      void lead.offsetWidth;              // reflow so the animation restarts cleanly
+      lead.classList.add("sticking");
+    }
+    // Then the visible cards (staggered starts), then the note AFTER the last
+    // card has landed.
     var lastCard = 0;
     animCards.forEach(function (card) { lastCard = Math.max(lastCard, computeIntro(card, 110 + Math.random() * 300)); });
     if (note) computeIntro(note, lastCard + 140);
-    var items = lead ? [lead] : [];
-    items = items.concat(animCards);
+    var items = animCards.slice();
     if (note) items.push(note);
     var maxTotal = 0;
     items.forEach(function (el) {

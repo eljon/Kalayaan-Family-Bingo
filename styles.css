@@ -1332,12 +1332,32 @@ body.board-active .cell-cam .cam-tx { font-size: clamp(11px, 3vw, 15px); }
   position: absolute; z-index: 4; pointer-events: none;
   left: 6px; top: 4px;
   width: 27%; max-width: 138px; aspect-ratio: 1448 / 1086;
-  background: url("assets/stickers/bff sticker.png") center / contain no-repeat;
-  transform: rotate(-6deg);
-  filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.42));
-  /* Hidden until the fly-in intro seats it (JS reveals it). Keeps its layout
-     so the intro can measure it; just never painted in place beforehand. */
+  transform: rotate(-6deg);           /* resting tilt (pivots about the centre) */
+  /* Hidden until the intro reveals it (JS). Keeps its layout so the intro can
+     measure it; just never painted in place beforehand. */
   visibility: hidden;
+}
+/* The image lives on an inner element so the "peel + unfold" placement can
+   pivot about the sticking corner without disturbing the box's resting tilt. */
+.cork-sticker-inner {
+  display: block; width: 100%; height: 100%;
+  background: url("assets/stickers/bff sticker.png") center / contain no-repeat;
+  filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.42));
+  transform-origin: 14% 16%;          /* the top-left corner sticks first */
+}
+/* Real-sticker placement: the top-left corner touches down, then the rest of
+   the sticker swings flat onto the board (with a small slap-down overshoot). */
+.cork-sticker.sticking .cork-sticker-inner {
+  animation: stickerStick 720ms cubic-bezier(.2, .72, .3, 1) both;
+}
+@keyframes stickerStick {
+  0%   { transform: perspective(600px) rotateX(-74deg) rotateY(-34deg) scale(.95); opacity: 0; }
+  16%  { opacity: 1; }
+  68%  { transform: perspective(600px) rotateX(7deg) rotateY(5deg) scale(1); }
+  100% { transform: perspective(600px) rotateX(0) rotateY(0) scale(1); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cork-sticker.sticking .cork-sticker-inner { animation: none; }
 }
 /* Each card is pinned to the cork: a slight seeded tilt + a steel pin, nothing else. */
 .ward-mini {
