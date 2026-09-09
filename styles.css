@@ -1337,27 +1337,44 @@ body.board-active .cell-cam .cam-tx { font-size: clamp(11px, 3vw, 15px); }
      measure it; just never painted in place beforehand. */
   visibility: hidden;
 }
-/* The image lives on an inner element so the "peel + unfold" placement can
-   pivot about the sticking corner without disturbing the box's resting tilt. */
+/* The image lives on an inner element so the "unfold" reveal can sweep across
+   it without disturbing the box's resting tilt. */
 .cork-sticker-inner {
-  display: block; width: 100%; height: 100%;
+  display: block; position: relative; width: 100%; height: 100%;
   background: url("assets/stickers/bff sticker.png") center / contain no-repeat;
   filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.42));
-  transform-origin: 14% 16%;          /* the top-left corner sticks first */
+  transform-origin: 8% 8%;            /* the top-left corner sticks first */
 }
-/* Real-sticker placement: the top-left corner touches down, then the rest of
-   the sticker swings flat onto the board (with a small slap-down overshoot). */
+/* A soft band of light that rides the unfolding edge, so the sticker reads as
+   being pressed down rather than simply wiped in. */
+.cork-sticker-inner::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(135deg, transparent 38%, rgba(255, 255, 255, 0.5) 50%, transparent 62%);
+  opacity: 0;
+}
+/* Real-sticker placement: the top-left corner adheres first, then the rest of
+   the sticker rolls flat across the board — a diagonal reveal sweeping to the
+   far corner, not a rigid flip. */
 .cork-sticker.sticking .cork-sticker-inner {
-  animation: stickerStick 720ms cubic-bezier(.2, .72, .3, 1) both;
+  animation: stickerUnfold 760ms cubic-bezier(.22, .75, .3, 1) both;
 }
-@keyframes stickerStick {
-  0%   { transform: perspective(600px) rotateX(-74deg) rotateY(-34deg) scale(.95); opacity: 0; }
-  16%  { opacity: 1; }
-  68%  { transform: perspective(600px) rotateX(7deg) rotateY(5deg) scale(1); }
-  100% { transform: perspective(600px) rotateX(0) rotateY(0) scale(1); opacity: 1; }
+.cork-sticker.sticking .cork-sticker-inner::after {
+  animation: stickerSheen 760ms cubic-bezier(.22, .75, .3, 1) both;
+}
+@keyframes stickerUnfold {
+  0%   { clip-path: polygon(0 0, 0 0, 0 0); transform: scale(.965); opacity: .9; }
+  10%  { opacity: 1; }
+  100% { clip-path: polygon(0 0, 235% 0, 0 235%); transform: scale(1); opacity: 1; }
+}
+@keyframes stickerSheen {
+  0%   { transform: translate(-75%, -75%); opacity: 0; }
+  22%  { opacity: .85; }
+  80%  { opacity: .35; }
+  100% { transform: translate(75%, 75%); opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .cork-sticker.sticking .cork-sticker-inner { animation: none; }
+  .cork-sticker.sticking .cork-sticker-inner,
+  .cork-sticker.sticking .cork-sticker-inner::after { animation: none; }
 }
 /* Each card is pinned to the cork: a slight seeded tilt + a steel pin, nothing else. */
 .ward-mini {

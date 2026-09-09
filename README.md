@@ -206,6 +206,7 @@ older version by URL slug**:
 | `/v170`  | Version 170 snapshot (the Wall sticker no longer flashes in place before its fly-in — it now defaults to hidden and is only revealed once the intro seats it off-screen; also fixes it staying visible for reduced-motion users) |
 | `/v171`  | Version 171 snapshot (the corkboard now fills the page from the first paint instead of starting small and growing; the fly-in only animates the cards in the first viewport — the rest appear in place — so the "X families" note arrives sooner, no longer waiting on the whole roster) |
 | `/v172`  | Version 172 snapshot (the BFF sticker no longer flies in — it now gets "stuck on" like a real sticker: the top-left corner touches down first, then the rest unfolds flat with a small slap-down settle, played as the first thing in the Wall intro) |
+| `/v173`  | Version 173 snapshot (reworked the sticker placement so it truly unfolds instead of flipping: a diagonal clip-path reveal spreads the sticker from the top-left corner out to the far corner, with a light sheen riding the unfolding edge) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap
