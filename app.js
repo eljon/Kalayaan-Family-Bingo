@@ -1045,6 +1045,21 @@
         }
       });
       card.appendChild(del);
+
+      // Admin: reset this family's password to 1234 (for members who forget it).
+      var pw = document.createElement("button");
+      pw.type = "button";
+      pw.className = "wm-admin-pw";
+      pw.textContent = "PW";
+      pw.setAttribute("aria-label", "Reset " + displayName(p.name) + " password to 1234");
+      pw.title = "Reset password to 1234";
+      pw.addEventListener("click", function (e) {
+        e.stopPropagation();
+        if (window.confirm("Reset " + displayName(p.name) + "'s password to 1234?\nThey can sign in with 1234 and change it later.")) {
+          resetPassword(p);
+        }
+      });
+      card.appendChild(pw);
     }
     return card;
   }
@@ -3282,6 +3297,24 @@
     work.catch(function () {}).then(function () {
       showToast(displayName(p.name) + " deleted.");
       renderWard();
+    });
+  }
+  // Admin: reset a family's password to 1234 (members who forget theirs). Writes
+  // the new password to the cloud doc AND to this device's local cache if the
+  // card happens to be stored here. Passwords are plaintext by design (see
+  // cloud.js), so this is a straight overwrite.
+  var ADMIN_RESET_PW = "1234";
+  function resetPassword(p) {
+    var id = p.id || Cloud.docId(p.name);
+    p.password = ADMIN_RESET_PW;
+    var la = getAccount(id);
+    if (la) { la.password = ADMIN_RESET_PW; putAccount(la); }
+    // If the reset target is the card we're currently signed into, keep it in sync.
+    if (current && current.id === id) current.password = ADMIN_RESET_PW;
+    showToast("Resetting " + displayName(p.name) + "'s password…");
+    var work = Cloud.enabled ? Cloud.savePlayer(p) : Promise.resolve();
+    work.catch(function () {}).then(function () {
+      showToast(displayName(p.name) + "'s password is now 1234.");
     });
   }
   // Admin: remove ONE completed task from a card (unmarks it + deletes photo).

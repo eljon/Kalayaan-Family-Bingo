@@ -1383,7 +1383,7 @@ body.board-active .cell-cam .cam-tx { font-size: clamp(11px, 3vw, 15px); }
 
 /* ---- Admin mode: delete badges + banner ---- */
 /* A round red trash badge, shared by the Wall card and the board's done cell. */
-.wm-admin-del, .cell-admin-del {
+.wm-admin-del, .cell-admin-del, .wm-admin-pw {
   position: absolute; z-index: 30;
   width: 40px; height: 40px; padding: 0;
   display: flex; align-items: center; justify-content: center;
@@ -1397,6 +1397,11 @@ body.board-active .cell-cam .cam-tx { font-size: clamp(11px, 3vw, 15px); }
 .cell-admin-del { top: 6px; right: 6px; }
 .wm-admin-del:hover, .cell-admin-del:hover { background: #c33f2c; transform: scale(1.06); }
 .wm-admin-del:active, .cell-admin-del:active { transform: scale(0.94); }
+/* Admin: reset this family's password (top-left, distinct navy so it never
+   reads as the red delete badge). Its "PW" label is spelled out in aria. */
+.wm-admin-pw { top: -8px; left: -8px; background: #1f3a5f; font-size: 13px; font-weight: 800; }
+.wm-admin-pw:hover { background: #16294a; transform: scale(1.06); }
+.wm-admin-pw:active { transform: scale(0.94); }
 /* (In admin mode the Join button's hand-drawn pill is repainted a deeper red
    in JS — see renderWardGrid — since its look is an inline SVG background.) */
 /* The version badge/switcher (injected by version.js) is for the admin only. */

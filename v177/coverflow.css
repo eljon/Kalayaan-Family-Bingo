@@ -1,0 +1,55 @@
+/*
+ * coverflow.css — required styles for coverflow.js.
+ * The viewport is the 3D camera (perspective); the track is the 3D space
+ * (preserve-3d); cards are absolutely placed and driven entirely by JS.
+ * Give .cf-card a fixed width/height of your own (see the demo).
+ */
+
+.cf-viewport {
+  position: relative;
+  overflow: hidden;            /* far cards fan out past the edges */
+  perspective: 1100px;         /* the 3D camera — bigger = flatter fan */
+  touch-action: pan-y;         /* let the page scroll vertically; cards lock it (below) */
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  /* You control the size. A sensible default: */
+  width: 100%;
+  height: 62vh;
+  max-height: 560px;
+  display: flex;               /* centres the track box; the cards center themselves */
+  align-items: center;
+  justify-content: center;
+}
+
+.cf-track {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d; /* so rotateY / translateZ render in real 3D */
+}
+
+.cf-card {
+  position: absolute;
+  top: 50%;                     /* anchor; JS centres each card with translate(-50%,-50%) */
+  left: 50%;
+  transform-origin: 50% 50%;    /* scale/tilt about the card centre (conventional coverflow).
+                                   For a shelf/reflection look use 50% 100% + top:68% + the
+                                   translate(-50%,-100%) variant noted in coverflow.js. */
+  touch-action: none;           /* a swipe on a card never scrolls the page */
+  will-change: transform, opacity;
+  /* NO transition here — JS sets the transform every frame; a transition would lag and fight it. */
+
+  /* --- purely cosmetic defaults; override freely --- */
+  width: 240px;
+  height: 320px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  background: #222;
+}
+
+.cf-card > * {                  /* make whatever you put inside fill the card */
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
