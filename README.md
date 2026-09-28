@@ -211,6 +211,7 @@ older version by URL slug**:
 | `/v175`  | Version 175 snapshot (shared photos are now full resolution and crisp — captures keep near-original resolution at high quality (up to 4096px @ 0.95) instead of 1280px @ 0.82, and the featured share image renders at 2× so the embedded photo isn't downsampled; the cloud copy is still budgeted down to fit Firestore separately) |
 | `/v176`  | Version 176 snapshot (share caption hashtags back on a single space-separated line — Facebook's composer kept only the first line of the shared text, so the v167 line break was dropping #KalayaanKapamilya) |
 | `/v177`  | Version 177 snapshot (admin can now reset any family's password to 1234 — a navy "PW" badge on each Wall card in admin mode, alongside the delete badge; writes the new password to the cloud doc and the local cache) |
+| `/v178`  | Version 178 snapshot (admin can now edit every family's card — in admin mode any card opened from the Wall shows Add Photo on open tasks and Replace / Remove on completed ones, saving to that family's card) |
 
 For example, `https://<owner>.github.io/<repo>/v1` loads version 1. A badge
 turns orange (`v1 · old`) when you're viewing an older version, with a one-tap

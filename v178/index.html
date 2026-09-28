@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1f3a5f" />
+  <title>Kalayaan Ward Family Bingo</title>
+  <meta name="description" content="Complete all activities as a family! Kalayaan Ward Family Bingo." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&family=Patrick+Hand&family=Permanent+Marker&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9D%A4%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles.css?v=178" />
+  <link rel="stylesheet" href="coverflow.css?v=178" />
+</head>
+<body>
+  <div class="bunting" aria-hidden="true">
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-text">
+        <span class="brand-ward">KALAYAAN WARD</span>
+        <h1 class="brand-title" aria-label="Family Bingo">
+          <span class="word"><span>F</span><span>A</span><span>M</span><span>I</span><span>L</span><span>Y</span></span>
+          <span class="word"><span>B</span><span>I</span><span>N</span><span>G</span><span>O</span></span>
+        </h1>
+      </div>
+    </div>
+    <p class="brand-motto">
+      <span class="c-red">Love.</span> <span class="c-teal">Share.</span>
+      <span class="c-green">Serve.</span> <span class="c-navy">Together.</span>
+    </p>
+    <div id="accountBar" class="account-bar" hidden>
+      <div class="account-info">
+        <span class="account-avatar" id="accountAvatar">👨‍👩‍👧‍👦</span>
+        <div>
+          <span class="account-label">Playing as</span>
+          <strong id="accountName">Family</strong>
+        </div>
+      </div>
+      <div class="account-actions">
+        <button id="switchBtn" class="btn btn-ghost" type="button">Switch card</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <!-- Ward View — everyone's cards (default landing screen) -->
+    <section id="ward" class="ward" hidden>
+      <div class="corkframe">
+        <div class="cork">
+          <div class="cork-note" id="corkNote" hidden>
+            <span class="tape tape-l" aria-hidden="true"></span>
+            <span class="tape tape-r" aria-hidden="true"></span>
+            <span class="cork-note-text" id="wardCount">&nbsp;</span>
+          </div>
+          <div id="wardGrid" class="ward-grid" role="list"></div>
+          <p id="wardEmpty" class="ward-empty" hidden>No families yet — tap <strong>Join</strong> to be the first!</p>
+          <div id="corkSticker" class="cork-sticker" role="img" aria-label="Building Forever Families 2026"><span class="cork-sticker-inner"></span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bingo board -->
+    <section id="board" class="board-section" hidden>
+      <div class="board-topbar">
+        <button id="boardBack" class="board-back" type="button" aria-label="Back to the wall">‹ Wall</button>
+        <button id="boardShare" class="board-share" type="button">Share card</button>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-head">
+          <strong id="progressText">0 of 12 complete</strong>
+          <span id="progressPct" class="progress-pct">0%</span>
+        </div>
+        <div class="progress-track"><div id="progressBar" class="progress-fill"></div></div>
+      </div>
+
+      <div id="celebrate" class="celebrate" hidden>
+        <div>
+          <strong>BINGO! You did it!</strong>
+          <p>Your family completed every activity. Amazing work!</p>
+        </div>
+      </div>
+
+      <div class="card-frame">
+        <div class="bingo-card">
+          <div class="card-paper" aria-hidden="true"></div>
+          <div class="card-head">
+            <strong class="card-name" id="cardName">Family</strong>
+            <span class="card-stat" id="cardStat" aria-label="activities complete">0/12</span>
+          </div>
+          <div id="grid" class="grid" role="list"></div>
+          <p class="card-motto">
+            <span class="c-red">Love.</span> <span class="c-teal">Share.</span>
+            <span class="c-green">Serve.</span> <span class="c-navy">Together.</span>
+            <svg class="hd-heart" viewBox="0 0 34 31" aria-hidden="true">
+              <path d="M17 28.5C16 27.8 4.2 20 3.2 11.8 C2.6 6.8 6.4 3.4 10 4.1 C12.9 4.7 15.6 7.2 17 10 C18.5 7.1 21.2 4.6 24.2 4.1 C27.8 3.5 31.4 7 30.8 12 C29.9 20 18 27.9 17 28.5Z"
+                    fill="#e8543f" stroke="#c33f2c" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/>
+            </svg>
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Join bar (pinned bottom on the Ward View) -->
+  <div id="joinBar" class="join-bar" hidden>
+    <button id="wardJoin" class="btn btn-primary" type="button">＋ Join / Sign in</button>
+  </div>
+
+  <!-- Join / sign-up modal (opened from the Ward View) -->
+  <div id="welcome" class="join-modal" hidden>
+    <div class="join-backdrop" data-join-close></div>
+    <div class="welcome-card">
+      <button class="modal-close" type="button" data-join-close aria-label="Close">×</button>
+      <h2 id="joinTitle" class="join-title">Start your card</h2>
+
+      <div id="existingCards" class="existing-cards" hidden>
+        <span class="existing-label">Recently on this device</span>
+        <ul id="cardList" class="card-list"></ul>
+      </div>
+
+      <form id="newCardForm" class="new-card-form" autocomplete="off">
+        <label class="field">
+          <span>Family / player name</span>
+          <input id="familyName" type="text" maxlength="40" placeholder="e.g. The Serrano Family" required />
+        </label>
+        <label class="field">
+          <span>Family password</span>
+          <input id="familyPass" type="password" maxlength="60" placeholder="a password only your family knows" autocomplete="off" required />
+        </label>
+        <label class="field" id="confirmField">
+          <span>Confirm password</span>
+          <input id="familyPass2" type="password" maxlength="60" placeholder="type it again" autocomplete="off" />
+        </label>
+        <button id="loginBtn" class="btn btn-primary" type="submit">Create card</button>
+        <p id="loginHint" class="login-hint" role="status"></p>
+      </form>
+
+      <p class="join-switch">
+        <span id="joinSwitchText">Already have an account?</span>
+        <button type="button" id="joinToggle" class="join-toggle-link">Sign in</button>
+      </p>
+
+      <p id="cloudStatus" class="cloud-status"></p>
+      <button id="signOutBtn" class="card-switch" type="button" hidden>Sign out</button>
+    </div>
+  </div>
+
+  <!-- Read-only view of one family's card (from the Ward View) -->
+  <div id="wardDetail" class="wd-modal" hidden>
+    <div class="wd-backdrop" data-wd-close></div>
+    <div class="wd-card">
+      <button class="modal-close" type="button" data-wd-close aria-label="Close">×</button>
+      <strong class="wd-name" id="wdName">Family</strong>
+      <div id="wdGrid" class="wd-grid" role="list"></div>
+    </div>
+  </div>
+
+
+  <!-- Featured photo — social-media share card (shown after a task is done) -->
+  <div id="share" class="share-modal" hidden>
+    <div class="share-backdrop" data-share-close></div>
+    <div class="share-card" role="dialog" aria-modal="true" aria-label="Share your photo">
+      <button class="modal-close" type="button" data-share-close aria-label="Close">×</button>
+      <div class="share-preview">
+        <img id="shareImg" alt="Your Family Bingo featured photo" />
+      </div>
+      <div class="share-actions">
+        <button id="shareBtn" class="btn btn-primary" type="button">Share</button>
+        <button class="btn btn-ghost" type="button" data-share-close>Done</button>
+      </div>
+      <p id="shareHint" class="share-hint" role="status"></p>
+    </div>
+  </div>
+
+  <!-- Photo viewer / cell modal -->
+  <div id="modal" class="modal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" type="button" data-close aria-label="Close">×</button>
+      <span class="modal-icon" id="modalIcon" aria-hidden="true"></span>
+      <h3 id="modalTitle">Activity</h3>
+      <p id="modalHint" class="modal-hint"></p>
+      <div id="modalPhotoWrap" class="modal-photo" hidden>
+        <img id="modalPhoto" alt="Your photo for this activity" />
+      </div>
+      <div class="modal-actions">
+        <label class="btn btn-primary" for="modalFile">
+          <span id="modalUploadLabel">Upload photo</span>
+          <input id="modalFile" type="file" accept="image/*" capture="environment" hidden />
+        </label>
+        <button id="modalRemove" class="btn btn-ghost danger" type="button" hidden>Remove photo</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script type="module">
+    import { createCoverflow } from "./coverflow.js?v=178";
+    window.createCoverflow = createCoverflow;
+    window.dispatchEvent(new Event("coverflow-ready"));
+  </script>
+
+  <!-- Firebase (compat SDK) for optional cloud sync across devices.
+       Loads from Google's CDN; if unreachable, the app runs local-only. -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js?v=178"></script>
+  <script src="cloud.js?v=178"></script>
+
+  <script src="app.js?v=178"></script>
+  <script>window.APP_VERSION = "v178";</script>
+  <script src="version.js?v=178"></script>
+
+  <!-- Device diagnostic: load eljon.github.io/?debug to see real values.
+       Harmless/invisible without the ?debug flag. -->
+  <script>
+  (function () {
+    if (!/[?&]debug/i.test(location.search)) return;
+    // ---- live TAP LOGGER (for the "tap twice to reopen coverflow" bug) ----
+    var log = [];
+    var n = 0;
+    function desc(t) {
+      if (!t || t === document) return "document";
+      if (t === window) return "window";
+      if (!t.tagName) return String(t);
+      var cls = "";
+      try { var c = t.getAttribute && t.getAttribute("class"); if (c) cls = "." + c.trim().split(/\s+/)[0]; } catch (e) {}
+      return t.tagName.toLowerCase() + (t.id ? "#" + t.id : "") + cls;
+    }
+    function record(e) {
+      var cfOpen = !!(document.querySelector(".cf-overlay") && !document.querySelector(".cf-overlay").hidden);
+      log.unshift((++n) + " " + e.type + " → " + desc(e.target) + (cfOpen ? "  [cf-open]" : ""));
+      if (log.length > 16) log.pop();
+      render();
+    }
+    ["pointerdown", "pointerup", "click"].forEach(function (t) {
+      document.addEventListener(t, record, true); // capture, see everything first
+    });
+
+    function render() {
+      var box = document.getElementById("kwfbDiag");
+      if (!box) {
+        box = document.createElement("div");
+        box.id = "kwfbDiag";
+        box.style.cssText = "position:fixed;z-index:99999;left:8px;right:8px;top:8px;max-height:46vh;overflow:auto;" +
+          "background:#0b1020;color:#c9f;font:11px/1.4 ui-monospace,Menlo,monospace;padding:10px 12px;border-radius:12px;" +
+          "box-shadow:0 8px 30px rgba(0,0,0,.5);border:1px solid #345;white-space:pre-wrap;word-break:break-word;";
+        document.body.appendChild(box);
+      }
+      var se = document.scrollingElement || document.documentElement;
+      box.textContent =
+        "KWFB TAP LOG (v72)\n" +
+        "reproduce: open coverflow → close it → tap the photo (fails) → tap again (opens),\nthen screenshot this box.\n" +
+        "scrollH/innerH: " + se.scrollHeight + "/" + window.innerHeight + "   hover:hover=" + matchMedia("(hover: hover)").matches + "\n" +
+        "──── newest first ────\n" +
+        log.join("\n");
+    }
+    if (document.body) render(); else addEventListener("DOMContentLoaded", render);
+  })();
+  </script>
+</body>
+</html>

@@ -781,7 +781,11 @@
   var isAdmin = false;     // ward-admin mode: can delete any card / task
   try { isAdmin = localStorage.getItem(LS_ADMIN) === "1"; } catch (e) {}
   var boardAcct = null;    // the account whose board is on screen (may be someone else's)
-  var boardReadOnly = false; // true when viewing a card you aren't signed in to
+  var boardReadOnly = false; // true when viewing a card you can't edit
+  var boardOwn = false;      // true when the board on screen is your own card
+  // The card that photo edits apply to: the one on screen (your own, or any
+  // family's card when the admin is editing it).
+  function editAcct() { return boardAcct || current; }
   var activeTaskId = null; // task open in modal
   var objectUrls = [];     // track for cleanup
 
@@ -1028,7 +1032,7 @@
     card.appendChild(tapeEl);
     card.addEventListener("click", function () {
       // Tapping any card zooms it up into its full card view — editable if it's
-      // the card you're signed in to, otherwise read-only.
+      // the card you're signed in to (or any card for the admin), otherwise read-only.
       zoomToBoard(card, p);
     });
     // Admin: a delete badge to remove this whole family card.
@@ -1436,12 +1440,14 @@
 
   // Render a family's board. With no argument (or your own account) the board
   // is editable; tapping another family's card from the wall passes that
-  // account and the board is read-only (no camera buttons, view photos only).
+  // account and the board is read-only (no camera buttons, view photos only)
+  // unless you're the ward admin, who can edit every card.
   function renderBoard(acct) {
     var a = acct || current;
-    var editable = !!(current && a && current.id === a.id);
-    boardAcct = editable ? current : a;  // freshest data for your own card
-    boardReadOnly = !editable;
+    var own = !!(current && a && current.id === a.id);
+    boardAcct = own ? current : a;  // freshest data for your own card
+    boardOwn = own;
+    boardReadOnly = !own && !isAdmin;
 
     revokeUrls();
     closeJoin();
@@ -1598,7 +1604,7 @@
     el.progressPct.textContent = pct + "%";
     el.progressBar.style.width = pct + "%";
     // Don't show the "You did it!" banner when viewing someone else's card.
-    el.celebrate.hidden = boardReadOnly || doneCount < total;
+    el.celebrate.hidden = !boardOwn || doneCount < total;
   }
 
   /* ------------------------------------------------------------------ */
@@ -2231,8 +2237,9 @@
   }
 
   function openShareCard(taskId, blob) {
-    var ts = (current && current.done && current.done[taskId]) || Date.now();
-    featurePhoto(taskId, current, ts, blob);
+    var acct = editAcct();
+    var ts = (acct && acct.done && acct.done[taskId]) || Date.now();
+    featurePhoto(taskId, acct, ts, blob);
   }
 
   // Lazily load html2canvas (only when the user first shares a card).
@@ -2450,7 +2457,8 @@
     var task = TASKS.filter(function (t) { return t.id === taskId; })[0];
     if (!task) return;
     activeTaskId = taskId;
-    var done = !!(current.done && current.done[taskId]);
+    var acct = editAcct();
+    var done = !!(acct.done && acct.done[taskId]);
 
     el.modalIcon.textContent = task.emoji;
     el.modalTitle.textContent = task.title;
@@ -2463,7 +2471,7 @@
     el.modalPhoto.removeAttribute("src");
 
     if (done) {
-      getPhotoSrc(current, taskId).then(function (src) {
+      getPhotoSrc(acct, taskId).then(function (src) {
         if (src && activeTaskId === taskId) {
           el.modalPhoto.src = src;
           el.modalPhotoWrap.hidden = false;
@@ -2486,17 +2494,18 @@
     if (!file || !activeTaskId) return;
     if (!/^image\//.test(file.type)) { showToast("Please choose an image file."); return; }
     var taskId = activeTaskId;
+    var acct = editAcct();
     el.modalUploadLabel.textContent = "Processing…";
 
     compressImage(file, PHOTO_MAX_DIM, PHOTO_QUALITY).then(function (blob) {
-      return putPhoto(current, taskId, blob).then(function () { return blob; });
+      return putPhoto(acct, taskId, blob).then(function () { return blob; });
     }).then(function (blob) {
-      var wasDone = !!(current.done && current.done[taskId]);
-      current.done = current.done || {};
+      var wasDone = !!(acct.done && acct.done[taskId]);
+      acct.done = acct.done || {};
       // Record the completion time/date per task; keep the FIRST completion time
       // (don't overwrite it when the photo is later replaced).
-      if (!current.done[taskId]) current.done[taskId] = Date.now();
-      updateAccount(current);
+      if (!acct.done[taskId]) acct.done[taskId] = Date.now();
+      updateAccount(acct);
 
       var u = URL.createObjectURL(blob);
       objectUrls.push(u);
@@ -2507,11 +2516,11 @@
         el.modalRemove.hidden = false;
       }
 
-      renderBoard();
+      renderBoard(acct);
       showToast("Activity complete!");
       if (!wasDone) { closeModal(); openShareCard(taskId, blob); }  // feature the photo
 
-      if (Object.keys(current.done).length === TASKS.length) {
+      if (Object.keys(acct.done).length === TASKS.length) {
         setTimeout(confetti, 200);
       }
     }).catch(function () {
@@ -2541,23 +2550,24 @@
     var taskId = pendingTaskId;
     picker.value = "";
     pendingTaskId = null;
-    if (!file || !taskId || !current) return;
+    var acct = editAcct();
+    if (!file || !taskId || !acct) return;
     if (!/^image\//.test(file.type)) { showToast("Please choose an image file."); return; }
 
-    showToast(Cloud.enabled && !(current && current.local) ? "Uploading photo…" : "Adding photo…");
+    showToast(Cloud.enabled && !acct.local ? "Uploading photo…" : "Adding photo…");
     compressImage(file, PHOTO_MAX_DIM, PHOTO_QUALITY).then(function (blob) {
-      return putPhoto(current, taskId, blob).then(function () { return blob; });
+      return putPhoto(acct, taskId, blob).then(function () { return blob; });
     }).then(function (blob) {
-      var wasDone = !!(current.done && current.done[taskId]);
-      current.done = current.done || {};
+      var wasDone = !!(acct.done && acct.done[taskId]);
+      acct.done = acct.done || {};
       // Record the completion time/date per task; keep the FIRST completion time
       // (don't overwrite it when the photo is later replaced).
-      if (!current.done[taskId]) current.done[taskId] = Date.now();
-      updateAccount(current);
-      renderBoard();
+      if (!acct.done[taskId]) acct.done[taskId] = Date.now();
+      updateAccount(acct);
+      renderBoard(acct);
       showToast("Activity complete!");
       if (!wasDone) openShareCard(taskId, blob);   // feature the photo for sharing
-      if (Object.keys(current.done).length === TASKS.length) setTimeout(confetti, 200);
+      if (Object.keys(acct.done).length === TASKS.length) setTimeout(confetti, 200);
     }).catch(function () {
       showToast("Couldn't save the photo — your browser may be blocking storage (try turning off Private Browsing).");
     });
@@ -2578,18 +2588,20 @@
   }
 
   function removePhoto() {
-    if (!activeTaskId || !current) return;
+    var acct = editAcct();
+    if (!activeTaskId || !acct) return;
     var taskId = activeTaskId;
-    wipeCompletion(current, taskId).then(function () {
-      renderBoard();
+    wipeCompletion(acct, taskId).then(function () {
+      renderBoard(acct);
       closeModal();
       showToast("Photo removed.");
     });
   }
 
   function removePhotoFor(taskId) {
-    if (!current) return Promise.resolve();
-    return wipeCompletion(current, taskId).then(function () { renderBoard(); });
+    var acct = editAcct();
+    if (!acct) return Promise.resolve();
+    return wipeCompletion(acct, taskId).then(function () { renderBoard(acct); });
   }
 
   /* ------------------------------------------------------------------ */
@@ -2740,7 +2752,8 @@
       if (!t) return;
       var idx = cf.current;
       removePhotoFor(t.id).then(function () {
-        var remaining = TASKS.filter(function (x) { return current.done && current.done[x.id]; });
+        var acct = editAcct();
+        var remaining = TASKS.filter(function (x) { return acct.done && acct.done[x.id]; });
         if (!remaining.length) { closeCoverflow(); return; }
         openCoverflowList(remaining, Math.min(idx, remaining.length - 1), false);
       });
@@ -2981,7 +2994,7 @@
   function openCoverflow(taskId) {
     var acct = boardAcct || current;
     if (!acct) return;
-    // The modal fallback edits your own card, so only use it when editable.
+    // The modal fallback edits the card on screen, so only use it when editable.
     if (typeof window.createCoverflow !== "function") { if (!boardReadOnly) openModal(taskId); return; }
     var doneTasks = TASKS.filter(function (t) { return acct.done && acct.done[t.id]; });
     if (!doneTasks.length) { if (!boardReadOnly) openModal(taskId); return; }
@@ -3038,8 +3051,8 @@
     teardownCoverflow();
     cf.tasks = doneTasks;
     cf.current = start;
-    // Replace / Remove are owner-only. Share works on your own card, and — for
-    // the ward admin — on ANY family's photo too.
+    // Replace / Remove / Share work on your own card, and (for the ward admin)
+    // on ANY family's card too.
     if (dom.replaceBtn) dom.replaceBtn.style.display = boardReadOnly ? "none" : "";
     if (dom.removeBtn) dom.removeBtn.style.display = boardReadOnly ? "none" : "";
     if (dom.shareBtn) dom.shareBtn.style.display = (boardReadOnly && !isAdmin) ? "none" : "";
@@ -3272,7 +3285,7 @@
     if (el.familyPass) el.familyPass.value = "";
     if (el.familyPass2) el.familyPass2.value = "";
     closeJoin();
-    showToast("Admin mode — you can now delete any card or task.");
+    showToast("Admin mode — you can now edit or delete any card.");
     renderWard();
   }
   function exitAdmin() {
